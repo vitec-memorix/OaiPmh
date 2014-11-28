@@ -1,0 +1,16 @@
+{
+  "name": "picturae/oai",
+  "description": "Picturae OAI package. Can be used to create a OAI endpoint",
+  "license": "proprietary",
+  "authors": [
+    {
+      "name": "Picturae",
+      "email": "info@picturae.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Picturae\\OAI\\": "src"
+    }
+  }
+}
