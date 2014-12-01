@@ -12,6 +12,9 @@ namespace Picturae\OAI\Tests;
 use Picturae\OAI\Exception\BadResumptionTokenException;
 use Picturae\OAI\Exception\IdDoesNotExistException;
 use Picturae\OAI\Interfaces\MetadataFormat;
+use Picturae\OAI\Record;
+use Picturae\OAI\Record\Header;
+use Picturae\OAI\RecordList;
 use Picturae\OAI\Repository\Identity;
 use Picturae\OAI\Response;
 use Picturae\OAI\Set;
@@ -193,14 +196,14 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
         $this->assertXPathExists($response, "/oai:OAI-PMH/oai:error[@code='badArgument']");
 
         $repo = $this->getProvider();
-        $repo->setRequest(['verb' => 'ListRecords', 'from' => '2345-31-12T12:12:00Z']);
+        $repo->setRequest(['verb' => 'ListRecords', 'from' => '2345-31-12T12:12:00Z', 'metadataPrefix' => 'oai_pmh']);
         $response = $repo->execute();
 
         $this->assertValidResponse($response);
         $this->assertXPathNotExists($response, "/oai:OAI-PMH/oai:error[@code='badArgument']");
 
         $repo = $this->getProvider();
-        $repo->setRequest(['verb' => 'ListRecords', 'from' => '2345-31-12']);
+        $repo->setRequest(['verb' => 'ListRecords', 'from' => '2345-31-12', 'metadataPrefix' => 'oai_pmh']);
         $response = $repo->execute();
 
         $this->assertValidResponse($response);
@@ -299,6 +302,43 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
                     }
                 }
             )
+        )->with();
+
+        $recordMetadata = new \DOMDocument();
+        $recordMetadata->loadXML(
+            '
+            <oai_dc:dc
+                 xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/"
+                 xmlns:dc="http://purl.org/dc/elements/1.1/"
+                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                 xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/
+                 http://www.openarchives.org/OAI/2.0/oai_dc.xsd">
+                <dc:title>Using Structural Metadata to Localize Experience of
+                          Digital Content</dc:title>
+                <dc:creator>Dushay, Naomi</dc:creator>
+                <dc:subject>Digital Libraries</dc:subject>
+                <dc:description>With the increasing technical sophistication of
+                    both information consumers and providers, there is
+                    increasing demand for more meaningful experiences of digital
+                    information. We present a framework that separates digital
+                    object experience, or rendering, from digital object storage
+                    and manipulation, so the rendering can be tailored to
+                    particular communities of users.
+                </dc:description>
+                <dc:description>Comment: 23 pages including 2 appendices,
+                    8 figures</dc:description>
+                <dc:date>2001-12-14</dc:date>
+            </oai_dc:dc>'
+        );
+        $recordList = new RecordList(
+            [
+                new Record(new Header("id1", new \DateTime()), $recordMetadata),
+            ],
+            'resumptionToken'
+        );
+
+        $mock->expects($this->any())->method('listRecords')->will(
+            $this->returnValue($recordList)
         )->with();
 
         return $mock;

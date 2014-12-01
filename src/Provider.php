@@ -15,8 +15,7 @@ use Picturae\OAI\Exception\MultipleExceptions;
 use Picturae\OAI\Exception\NoMetadataFormatsException;
 use Picturae\OAI\Exception\NoRecordsMatchException;
 use Picturae\OAI\Exception\NoSetHierarchyException;
-use Picturae\OAI\Interfaces\Record;
-use Picturae\OAI\Interfaces\RecordList;
+use Picturae\OAI\Interfaces\RecordList as RecordListInterface;
 use Picturae\OAI\Interfaces\Repository;
 
 class Provider
@@ -229,7 +228,7 @@ class Provider
         } else {
             $from = null;
             $until = null;
-            $set = $this->request['set']? $this->request['set']: null;
+            $set = isset($this->request['set'])? $this->request['set']: null;
 
             $this->doChecks(
                 [
@@ -284,7 +283,9 @@ class Provider
         $headerNode = $this->response->createElement('header');
         $header = $record->getHeader();
         $headerNode->appendChild($this->response->createElement('identifier', $header->getIdentifier()));
-        $headerNode->appendChild($this->response->createElement('datestamp', $header->getDatestamp()));
+        $headerNode->appendChild(
+            $this->response->createElement('datestamp', $this->toUtcDateTime($header->getDatestamp()))
+        );
         foreach ($header->getSetSpecs() as $setSpec) {
             $headerNode->appendChild($this->response->createElement('setSpec', $setSpec));
         }
@@ -326,8 +327,8 @@ class Provider
     }
 
     /**
-     * @param RecordList $recordList
-     * @param DomElement $listNode
+     * @param RecordListInterface $recordList
+     * @param \DomElement $listNode
      */
     private function addResumptionToken($recordList, $listNode)
     {
