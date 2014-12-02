@@ -69,7 +69,7 @@ class Identity implements \Picturae\OAI\Interfaces\Repository\Identity
         array $adminEmails,
         $granularity,
         $compression = null,
-        $description = null
+        \DOMDocument $description = null
     ) {
         $this->repositoryName = $repositoryName;
         $this->baseUrl = $baseUrl;

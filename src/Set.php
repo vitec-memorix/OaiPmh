@@ -1,16 +1,44 @@
 <?php
 /**
  * Created by PhpStorm.
- * User: jsmit
- * Date: 28-11-14
- * Time: 12:56
+ * User: jeroen
+ * Date: 12/1/14
+ * Time: 4:11 PM
  */
 
-namespace Picturae\OAI\Interfaces;
+namespace Picturae\OAI;
 
+use Picturae\OAI\Interfaces\Set as SetInterface;
 
-interface Set
+class Set implements SetInterface
 {
+    /**
+     * @var string
+     */
+    private $spec;
+
+    /**
+     * @var string
+     */
+    private $name;
+
+    /**
+     * @var \DOMDocument|null
+     */
+    private $description;
+
+    /**
+     * @param string $spec
+     * @param string $name
+     * @param \DOMDocument|null $description
+     */
+    public function __construct($spec, $name, \DOMDocument $description = null)
+    {
+        $this->description = $description;
+        $this->name = $name;
+        $this->spec = $spec;
+    }
+
 
     /**
      * @return string
@@ -19,12 +47,18 @@ interface Set
      * must not contain any colons [:]. Since a setSpec forms a unique identifier for the set within the repository, it
      * must be unique for each set. Flat set organizations have only sets with setSpec that do not contain any colons.
      */
-    public function getSpec();
+    public function getSpec()
+    {
+        return $this->spec;
+    }
 
     /**
      * @return string a short human-readable string naming the set.
      */
-    public function getName();
+    public function getName()
+    {
+        return $this->name;
+    }
 
     /**
      * @return \DOMDocument|null
@@ -32,5 +66,10 @@ interface Set
      * the set; the accompanying Implementation Guidelines document provides suggestions regarding the usage of this
      * container.
      */
-    public function getDescription();
-}
+    public function getDescription()
+    {
+        return $this->description;
+    }
+
+
+} 

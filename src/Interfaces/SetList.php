@@ -13,7 +13,7 @@ interface SetList extends ResultList
 {
 
     /**
-     * @return Record[]
+     * @return Set[]
      */
     public function getItems();
 }
