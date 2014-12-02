@@ -22,13 +22,14 @@ use Picturae\OAI\SetList;
 
 class ProviderTest extends \PHPUnit_Framework_TestCase
 {
-    private function getProvider ()
+    private function getProvider()
     {
         $mock = $this->getRepo();
         return new \Picturae\OAI\Provider($mock);
     }
 
-    public function testNoVerb(){
+    public function testNoVerb()
+    {
         $repo = $this->getProvider();
         $response = $repo->execute();
 
@@ -36,7 +37,8 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
         $this->assertXPathExists($response, "/oai:OAI-PMH/oai:error[@code='badVerb']");
     }
 
-    public function testBadVerb(){
+    public function testBadVerb()
+    {
         $repo = $this->getProvider();
         $repo->setRequest(['verb' => 'badverb']);
         $response = $repo->execute();
@@ -45,7 +47,8 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
         $this->assertXPathExists($response, "/oai:OAI-PMH/oai:error[@code='badVerb']");
     }
 
-    public function testMultipleVerbs(){
+    public function testMultipleVerbs()
+    {
         $repo = $this->getProvider();
         $repo->setRequest(['verb' => ['verb1', 'verb2']]);
         $response = $repo->execute();
@@ -54,7 +57,8 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
         $this->assertXPathExists($response, "/oai:OAI-PMH/oai:error[@code='badVerb']");
     }
 
-    public function testBadArguments(){
+    public function testBadArguments()
+    {
         $repo = $this->getProvider();
         $repo->setRequest(['verb' => 'Identify', 'nonExistingArg' => '1', 'nonExistingArg2' => '1']);
         $response = $repo->execute();
@@ -64,7 +68,8 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
         $this->assertXPathExists($response, "/oai:OAI-PMH/oai:error[@code='badArgument'][2]");
     }
 
-    private function assertXPathExists(Response $response, $query){
+    private function assertXPathExists(Response $response, $query)
+    {
         $document = $response->getDocument();
         $xpath = new \DOMXPath($document);
         $xpath->registerNamespace("oai", 'http://www.openarchives.org/OAI/2.0/');
@@ -76,7 +81,8 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-    private function assertXPathNotExists(Response $response, $query){
+    private function assertXPathNotExists(Response $response, $query)
+    {
         $document = $response->getDocument();
         $xpath = new \DOMXPath($document);
         $xpath->registerNamespace("oai", 'http://www.openarchives.org/OAI/2.0/');
@@ -91,18 +97,20 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
     private function assertValidResponse(Response $response)
     {
         $schemaLocation = $response->getDocument()->documentElement->getAttributeNS(
-            'http://www.w3.org/2001/XMLSchema-instance', 'schemaLocation'
+            'http://www.w3.org/2001/XMLSchema-instance',
+            'schemaLocation'
         );
         $xsd = explode(" ", $schemaLocation)[1];
 
         try {
             $this->assertTrue($response->getDocument()->schemaValidate($xsd));
-        } catch (\Exception $e){
+        } catch (\Exception $e) {
             $this->fail($e->getMessage() . " in:\n" . $response->getDocument()->saveXML());
         }
     }
 
-    public function testIdentify(){
+    public function testIdentify()
+    {
         $repo = $this->getProvider();
         $repo->setRequest(['verb' => 'Identify']);
         $response = $repo->execute();
@@ -111,7 +119,8 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
         $this->assertValidResponse($response);
     }
 
-    public function testListMetadataFormats(){
+    public function testListMetadataFormats()
+    {
         $repo = $this->getProvider();
         $repo->setRequest(['verb' => 'ListMetadataFormats']);
         $response = $repo->execute();
@@ -121,7 +130,8 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
         $this->assertValidResponse($response);
     }
 
-    public function testListMetadataFormatsWithIdentifier(){
+    public function testListMetadataFormatsWithIdentifier()
+    {
         $repo = $this->getProvider();
         $repo->setRequest(['verb' => 'ListMetadataFormats', 'identifier' => 'a']);
         $response = $repo->execute();
@@ -143,7 +153,8 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
         $this->assertValidResponse($response);
     }
 
-    public function testListSets(){
+    public function testListSets()
+    {
         $repo = $this->getProvider();
         $repo->setRequest(['verb' => 'ListSets']);
         $response = $repo->execute();
@@ -173,7 +184,8 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
         $this->assertXPathExists($response, "/oai:OAI-PMH/oai:error[@code='badResumptionToken']");
     }
 
-    public function testListRecords(){
+    public function testListRecords()
+    {
         //bad date in Y-m-d format
         $repo = $this->getProvider();
         $repo->setRequest(['verb' => 'ListRecords', 'from' => '2345-44-56']);
@@ -213,7 +225,8 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
         $this->assertValidResponse($response);
     }
 
-    public function testListIdentifiers(){
+    public function testListIdentifiers()
+    {
         $repo = $this->getProvider();
         $repo->setRequest(['verb' => 'ListIdentifiers', 'from' => '2345-44-56']);
         $response = $repo->execute();
@@ -281,7 +294,7 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
             )
         );
 
-        $listFormats = function ($identifier = null){
+        $listFormats = function ($identifier = null) {
             switch ($identifier) {
                 case "a":
                 case null:
@@ -326,7 +339,7 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
                     if ($token == "a") {
                         return $setList;
                     } elseif ($token == "a") {
-                        return  new SetList(
+                        return new SetList(
                             [
                                 new Set("a", "set A"),
                                 new Set("b", "set B"),

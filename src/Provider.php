@@ -18,8 +18,34 @@ use Picturae\OAI\Exception\NoSetHierarchyException;
 use Picturae\OAI\Interfaces\RecordList as RecordListInterface;
 use Picturae\OAI\Interfaces\Repository;
 
+/**
+ * Class Provider
+ *
+ * @example
+ * <code>
+ *
+ * //create provider object
+ * $provider = new Picturae\OAI\Provider($someRepository);
+ * //where some $someRepository is an implementation of \Picturae\OAI\Interfaces\Repository
+ *
+ * // add request variables, this could be just $_GET or $_POST in case of a post but can also come from a different
+ * // source
+ * $provider->setRequest($get);
+ *
+ * //run the oai provider this will return a object containing all headers and output
+ * $response = $provider->execute();
+ *
+ * //output headers, body and then exit (it is possible to do manipulations before outputting but this is not advised.
+ * $response->outputAndExit();
+ * </code>
+ * @package Picturae\OAI
+ */
 class Provider
 {
+
+    /**
+     * @var array containing all verbs and the arguments they except
+     */
     private static $verbs = [
         "Identify" => array(),
         "ListMetadataFormats" => array('identifier'),
@@ -28,6 +54,10 @@ class Provider
         "ListIdentifiers" => array('from', 'until', 'metadataPrefix', 'set', 'resumptionToken'),
         "ListRecords" => array('from', 'until', 'metadataPrefix', 'set', 'resumptionToken')
     ];
+
+    /**
+     * @var string the verb of the current request
+     */
     private $verb;
 
     /**
@@ -45,6 +75,9 @@ class Provider
      */
     private $request = [];
 
+    /**
+     * @param Repository $repository
+     */
     public function __construct(Repository $repository)
     {
         $this->repository = $repository;
@@ -66,6 +99,10 @@ class Provider
         $this->request = $request;
     }
 
+    /**
+     * @param \DateTime $time
+     * @return string
+     */
     private function toUtcDateTime(\DateTime $time)
     {
         $UTC = new \DateTimeZone("UTC");
@@ -74,6 +111,7 @@ class Provider
     }
 
     /**
+     * handles the current request
      * @return Response
      */
     public function execute()
@@ -86,21 +124,32 @@ class Provider
         try {
             $this->checkVerb();
             $verbOutput = $this->doVerb();
-            foreach ($this->request as $k=>$v) {
+
+            // we are sure now that all request variables are correct otherwise an error would have been thrown
+            foreach ($this->request as $k => $v) {
                 $requestNode->setAttribute($k, $v);
             }
+
+            // the element is only added when everything went fine, otherwise we would add error node(s) in the catch
+            // block below
             $this->response->getDocument()->documentElement->appendChild($verbOutput);
         } catch (MultipleExceptions $errors) {
+            //multiple errors happened add all of the to the response
             foreach ($errors as $error) {
                 $this->response->addError($error);
             }
         } catch (Exception $error) {
+            //add this error to the response
             $this->response->addError($error);
         }
 
         return $this->response;
     }
 
+    /**
+     * executes the right function for the current verb
+     * @return \DOMElement
+     */
     private function doVerb()
     {
         switch ($this->verb) {
@@ -125,10 +174,16 @@ class Provider
         }
     }
 
+    /**
+     * handles Identify requests
+     * @return \DOMElement
+     */
     private function identify()
     {
         $identity = $this->repository->identify();
         $identityNode = $this->response->createElement('Identify');
+
+        // create a node for each property of identify
         $identityNode->appendChild($this->response->createElement('repositoryName', $identity->getRepositoryName()));
         $identityNode->appendChild($this->response->createElement('baseURL', $identity->getBaseUrl()));
         $identityNode->appendChild($this->response->createElement('protocolVersion', '2.0'));
@@ -150,6 +205,10 @@ class Provider
         return $identityNode;
     }
 
+    /**
+     * handles ListMetadataFormats requests
+     * @return \DOMElement
+     */
     private function listMetadataFormats()
     {
         $listNode = $this->response->createElement('ListMetadataFormats');
@@ -161,6 +220,7 @@ class Provider
             throw new NoMetadataFormatsException();
         }
 
+        //create a node for each metadataFormat
         foreach ($formats as $format) {
             $formatNode = $this->response->createElement('metadataFormat');
             $formatNode->appendChild($this->response->createElement("metadataPrefix", $format->getPrefix()));
@@ -171,6 +231,9 @@ class Provider
         return $listNode;
     }
 
+    /**
+     * checks if the provided verb is correct and if the arguments supplied are allowed for this verb
+     */
     private function checkVerb()
     {
         if (!isset($this->request['verb'])) {
@@ -205,10 +268,15 @@ class Provider
         }
     }
 
+    /**
+     * handles ListSets requests
+     * @return \DOMElement
+     */
     private function listSets()
     {
         $listNode = $this->response->createElement('ListSets');
 
+        // fetch the sets either by resumption token or without
         if (isset($this->request['resumptionToken'])) {
             $sets = $this->repository->listSetsByToken($this->request['resumptionToken']);
         } else {
@@ -218,7 +286,8 @@ class Provider
             }
         }
 
-        foreach($sets->getItems() as $set) {
+        //create node for all sets
+        foreach ($sets->getItems() as $set) {
             $setNode = $this->response->createElement('set');
             $setNode->appendChild($this->response->createElement('setSpec', $set->getSpec()));
             $setNode->appendChild($this->response->createElement('setName', $set->getName()));
@@ -233,6 +302,10 @@ class Provider
         return $listNode;
     }
 
+    /**
+     * handles ListSets Records
+     * @return \DOMElement
+     */
     private function listRecords()
     {
         $listNode = $this->response->createElement('ListRecords');
@@ -253,13 +326,15 @@ class Provider
             }
         }
 
+        //create 'record' node for each record with a 'header', 'metadata' and possibly 'about' node
         foreach ($records->getItems() as $record) {
             $recordNode = $this->response->createElement('record');
             $recordNode->appendChild($this->getRecordHeaderNode($record));
             $recordNode->appendChild($this->response->createElement('metadata', $record->getMetadata()));
 
+            //only add an 'about' node if it's not null
             $about = $record->getAbout();
-            if ($about) {
+            if ($about !== null) {
                 $recordNode->appendChild($this->response->createElement('about', $about));
             }
 
@@ -271,6 +346,10 @@ class Provider
         return $listNode;
     }
 
+    /**
+     * handles ListIdentifiers requests
+     * @return \DOMElement
+     */
     private function listIdentifiers()
     {
         $listNode = $this->response->createElement('ListRecords');
@@ -289,6 +368,7 @@ class Provider
             }
         }
 
+        // create 'record' with only headers
         foreach ($records->getItems() as $record) {
             $recordNode = $this->response->createElement('record');
             $recordNode->appendChild($this->getRecordHeaderNode($record));
@@ -300,7 +380,13 @@ class Provider
         return $listNode;
     }
 
-    private function getRecordHeaderNode(Record $record){
+    /**
+     * Converts the header of a record to a header node, used for both ListRecords and ListIdentifiers
+     * @param Record $record
+     * @return \DOMElement
+     */
+    private function getRecordHeaderNode(Record $record)
+    {
         $headerNode = $this->response->createElement('header');
         $header = $record->getHeader();
         $headerNode->appendChild($this->response->createElement('identifier', $header->getIdentifier()));
@@ -317,9 +403,11 @@ class Provider
     }
 
     /**
-     * @param $checks
+     * does all the checks in the closures and merge any exceptions into one big exception
+     * @param \Closure[] $checks
      */
-    private function doChecks($checks){
+    private function doChecks($checks)
+    {
         $errors = [];
         foreach ($checks as $check) {
             try {
@@ -333,6 +421,12 @@ class Provider
         }
     }
 
+    /**
+     * Converts a date coming from a request param and converts it to a \DateTime
+     * @param string $date
+     * @return \DateTime
+     * @throws BadArgumentException when the date is invalid or not supplied in the right format
+     */
     private function parseRequestDate($date)
     {
         $timezone = new \DateTimeZone("UTC");
@@ -350,6 +444,7 @@ class Provider
     }
 
     /**
+     * Adds a resumptionToken to a a listNode if the is a resumption token otherwise it does nothing
      * @param RecordListInterface $recordList
      * @param \DomElement $listNode
      */
@@ -362,6 +457,7 @@ class Provider
     }
 
     /**
+     * parses request arguments used by both ListIdentifiers and ListRecrods
      * @param bool $checkMetadataPrefix
      * @return array
      */
@@ -371,7 +467,7 @@ class Provider
         $until = null;
         $set = isset($this->request['set']) ? $this->request['set'] : null;
 
-        $checks =[
+        $checks = [
 
             function () use (&$from) {
                 if (isset($this->request['from'])) {

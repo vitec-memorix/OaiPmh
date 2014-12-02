@@ -11,6 +11,12 @@ namespace Picturae\OAI;
 
 use Picturae\OAI\Interfaces\Set;
 
+/**
+ * Class SetList
+ * Basic implementation of Picturae\OAI\Interfaces\SetList
+ *
+ * @package Picturae\OAI
+ */
 class SetList implements \Picturae\OAI\Interfaces\SetList
 {
     /**
@@ -27,7 +33,7 @@ class SetList implements \Picturae\OAI\Interfaces\SetList
      * @param Set[] $items
      * @param null|string $resumptionToken
      */
-    public function __construct($items, $resumptionToken=null)
+    public function __construct($items, $resumptionToken = null)
     {
         $this->items = $items;
         $this->resumptionToken = $resumptionToken;

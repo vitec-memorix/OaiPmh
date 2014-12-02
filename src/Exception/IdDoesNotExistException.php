@@ -13,7 +13,8 @@ use Picturae\OAI\Exception;
 
 class IdDoesNotExistException extends Exception
 {
-    public function getErrorName(){
+    public function getErrorName()
+    {
         return "idDoesNotExist";
     }
 } 
