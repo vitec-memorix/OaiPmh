@@ -11,6 +11,12 @@ namespace Picturae\OAI;
 
 use Picturae\OAI\Interfaces\Set;
 
+/**
+ * Class SetList
+ * Basic implementation of Picturae\OAI\Interfaces\SetList
+ *
+ * @package Picturae\OAI
+ */
 class SetList implements \Picturae\OAI\Interfaces\SetList
 {
     /**

@@ -53,9 +53,12 @@ class Response
         return $this->document->saveXML();
     }
 
+    /**
+     *
+     */
     public function __construct()
     {
-        $this->document = new \DOMDocument();
+        $this->document = new \DOMDocument('1.0', 'UTF-8');
         $this->document->formatOutput = true;
         $this->rootNode = $this->document->createElementNS('http://www.openarchives.org/OAI/2.0/', "oai-pmh:OAI-PMH");
         $this->rootNode->setAttributeNS(
@@ -67,13 +70,22 @@ class Response
         $this->document->appendChild($this->rootNode);
     }
 
-    public function addElement($name, $value = null, $nameSpace=null)
+    /**
+     * @param $name
+     * @param string $value
+     * @return \DOMElement
+     */
+    public function addElement($name, $value = null)
     {
-        $element = $this->createElement($name, $value, $nameSpace);
+        $element = $this->createElement($name, $value, null);
         $this->document->documentElement->appendChild($element);
         return $element;
     }
 
+    /**
+     * adds an error node base on a Exception
+     * @param Exception $error
+     */
     public function addError(Exception $error)
     {
         $errorNode = $this->addElement("error", $error->getMessage());
@@ -109,6 +121,7 @@ class Response
     }
 
     /**
+     * prints headers
      * @return $this
      */
     public function printHeaders()
@@ -120,23 +133,23 @@ class Response
     }
 
     /**
-     *
+     * output header, body and then exits
      */
     public function outputAndExit()
     {
         $this->printHeaders();
         echo $this->output;
+        exit;
     }
 
     /**
-     * @param $name
-     * @param $value
-     * @param $nameSpace
+     * @param string $name
+     * @param \DOMDocument|string $value
      * @return \DOMElement
      */
-    public function createElement($name, $value = null, $nameSpace = null)
+    public function createElement($name, $value = null)
     {
-        $nameSpace = $nameSpace ?: 'http://www.openarchives.org/OAI/2.0/';
+        $nameSpace = 'http://www.openarchives.org/OAI/2.0/';
 
         if ($value instanceof \DOMDocument) {
             $element = $this->document->createElementNS($nameSpace, $name, null);

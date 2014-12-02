@@ -12,6 +12,12 @@ namespace Picturae\OAI\Record;
 
 use Picturae\OAI\Interfaces\Record\Header as HeaderInterface;
 
+/**
+ * Class Header
+ * Basic implementation of \Picturae\OAI\Interfaces\Record\Header
+ *
+ * @package Picturae\OAI\Record
+ */
 class Header implements HeaderInterface
 {
     /**

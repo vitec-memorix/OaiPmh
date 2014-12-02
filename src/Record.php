@@ -11,6 +11,12 @@ namespace Picturae\OAI;
 use Picturae\OAI\Interfaces\Record as RecordInterface;
 use Picturae\OAI\Interfaces\Record\Header;
 
+/**
+ * Class Record
+ * Basic implementation of Picturae\OAI\Interfaces\Record
+ *
+ * @package Picturae\OAI
+ */
 class Record implements RecordInterface
 {
     /**
@@ -30,8 +36,8 @@ class Record implements RecordInterface
 
     /**
      * @param Header $header
-     * @param DOMDocument $metadata
-     * @param DOMDocument $about
+     * @param \DOMDocument $metadata
+     * @param \DOMDocument $about
      */
     function __construct(Header $header, \DOMDocument $metadata, \DOMDocument $about = null)
     {
