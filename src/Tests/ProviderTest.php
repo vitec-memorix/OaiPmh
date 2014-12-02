@@ -174,6 +174,7 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
     }
 
     public function testListRecords(){
+        //bad date in Y-m-d format
         $repo = $this->getProvider();
         $repo->setRequest(['verb' => 'ListRecords', 'from' => '2345-44-56']);
         $response = $repo->execute();
@@ -181,22 +182,24 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
         $this->assertValidResponse($response);
         $this->assertXPathExists($response, "/oai:OAI-PMH/oai:error[@code='badArgument']");
 
+        //metadata prefix missing
         $repo = $this->getProvider();
-        $repo->setRequest(['verb' => 'ListRecords', 'from' => '2345-31-12']);
+        $repo->setRequest(['verb' => 'ListRecords', 'from' => '2345-01-01T12:12+00']);
         $response = $repo->execute();
 
         $this->assertValidResponse($response);
         $this->assertXPathExists($response, "/oai:OAI-PMH/oai:error[@code='badArgument']");
 
-        $repo = $this->getProvider();
-        $repo->setRequest(['verb' => 'ListRecords', 'from' => '2345-31-12T12:12+00']);
-        $response = $repo->execute();
-
-        $this->assertValidResponse($response);
-        $this->assertXPathExists($response, "/oai:OAI-PMH/oai:error[@code='badArgument']");
-
+        //bad date
         $repo = $this->getProvider();
         $repo->setRequest(['verb' => 'ListRecords', 'from' => '2345-31-12T12:12:00Z', 'metadataPrefix' => 'oai_pmh']);
+        $response = $repo->execute();
+
+        $this->assertXPathExists($response, "/oai:OAI-PMH/oai:error[@code='badArgument']");
+
+        //valid request
+        $repo = $this->getProvider();
+        $repo->setRequest(['verb' => 'ListRecords', 'from' => '2345-01-01T12:12:00Z', 'metadataPrefix' => 'oai_pmh']);
         $response = $repo->execute();
 
         $this->assertXPathNotExists($response, "/oai:OAI-PMH/oai:error");
@@ -208,6 +211,38 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
 
         $this->assertXPathExists($response, "/oai:OAI-PMH/oai:error[@code='badArgument']");
         $this->assertValidResponse($response);
+    }
+
+    public function testListIdentifiers(){
+        $repo = $this->getProvider();
+        $repo->setRequest(['verb' => 'ListIdentifiers', 'from' => '2345-44-56']);
+        $response = $repo->execute();
+
+        $this->assertValidResponse($response);
+        $this->assertXPathExists($response, "/oai:OAI-PMH/oai:error[@code='badArgument']");
+
+        $repo = $this->getProvider();
+        $repo->setRequest(['verb' => 'ListIdentifiers', 'from' => '2345-31-12']);
+        $response = $repo->execute();
+
+        $this->assertValidResponse($response);
+        $this->assertXPathExists($response, "/oai:OAI-PMH/oai:error[@code='badArgument']");
+
+        //we don't allow ++00
+        $repo = $this->getProvider();
+        $repo->setRequest(['verb' => 'ListIdentifiers', 'from' => '2345-01-01T12:12:00+00']);
+        $response = $repo->execute();
+
+        $this->assertValidResponse($response);
+        $this->assertXPathExists($response, "/oai:OAI-PMH/oai:error[@code='badArgument']");
+
+        //valid request
+        $repo = $this->getProvider();
+        $repo->setRequest(['verb' => 'ListIdentifiers', 'from' => '2345-01-01T12:12:00Z']);
+        $response = $repo->execute();
+
+        $this->assertValidResponse($response);
+        $this->assertXPathNotExists($response, "/oai:OAI-PMH/oai:error");
     }
 
     /**

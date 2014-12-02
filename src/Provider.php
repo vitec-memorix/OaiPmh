@@ -116,8 +116,12 @@ class Provider
             case "ListRecords":
                 return $this->listRecords();
                 break;
+            case "ListIdentifiers":
+                return $this->listIdentifiers();
+                break;
             default:
-                //@todo;
+                //shouldn't be possible to come here because verb was already checked, but just in case
+                throw new BadVerbException("$this->verb is not a valid verb");
         }
     }
 
@@ -235,31 +239,10 @@ class Provider
         if (isset($this->request['resumptionToken'])) {
             $records = $this->repository->listRecordsByToken($this->request['resumptionToken']);
         } else {
-            $from = null;
-            $until = null;
-            $set = isset($this->request['set'])? $this->request['set']: null;
+            list($from, $until, $set) = $this->getRecordListParams();
 
-            $this->doChecks(
-                [
-                    function (){
-                        if (!isset($this->request['metadataPrefix'])) {
-                            throw new BadArgumentException("Missing required argument metadataPrefix");
-                        }
-                    },
-                    function () use (&$from) {
-                        if (isset($this->request['from'])) {
-                            $from = $this->parseRequestDate($this->request['from']);
-                        }
-                    },
-                    function () use (&$until) {
-                        if (isset($this->request['until'])) {
-                            $until = $this->parseRequestDate($this->request['until']);
-                        }
-                    },
-                ]
-            );
-
-            $records = $this->repository->listRecords($this->request['metadataPrefix'], $from, $until, $set);
+            $metadataFormat = $this->request['metadataPrefix'];
+            $records = $this->repository->listRecords($metadataFormat, $from, $until, $set);
 
             if (!count($records->getItems())) {
                 //maybe this is because someone tries to fetch from a set and we don't support that
@@ -277,9 +260,38 @@ class Provider
 
             $about = $record->getAbout();
             if ($about) {
-                $recordNode->appendChild($this->response->createElement('metadata', $record->getMetadata()));
+                $recordNode->appendChild($this->response->createElement('about', $about));
             }
 
+            $listNode->appendChild($recordNode);
+        }
+
+        $this->addResumptionToken($records, $listNode);
+
+        return $listNode;
+    }
+
+    private function listIdentifiers()
+    {
+        $listNode = $this->response->createElement('ListRecords');
+        if (isset($this->request['resumptionToken'])) {
+            $records = $this->repository->listRecordsByToken($this->request['resumptionToken']);
+        } else {
+            list($from, $until, $set) = $this->getRecordListParams(false);
+            $records = $this->repository->listRecords(null, $from, $until, $set);
+
+            if (!count($records->getItems())) {
+                //maybe this is because someone tries to fetch from a set and we don't support that
+                if ($set && !count($this->repository->listSets()->getItems())) {
+                    throw new NoSetHierarchyException();
+                }
+                throw new NoRecordsMatchException();
+            }
+        }
+
+        foreach ($records->getItems() as $record) {
+            $recordNode = $this->response->createElement('record');
+            $recordNode->appendChild($this->getRecordHeaderNode($record));
             $listNode->appendChild($recordNode);
         }
 
@@ -324,15 +336,17 @@ class Provider
     private function parseRequestDate($date)
     {
         $timezone = new \DateTimeZone("UTC");
-        $date = date_create_from_format('Y-m-d\TH:i:s\Z', $date, $timezone);
-        if (!$date) {
-            $date = date_create_from_format('Y-m-d', $date, $timezone);
+        $parsedDate = date_create_from_format('Y-m-d\TH:i:s\Z', $date, $timezone);
+        if (!$parsedDate) {
+            $parsedDate = date_create_from_format('Y-m-d', $date, $timezone);
         }
-        if (!$date) {
+
+        $parseResult = date_get_last_errors();
+        if (!$parsedDate || ($parseResult['error_count'] > 0) || ($parseResult['warning_count'] > 0)) {
             throw new BadArgumentException("$date is not a valid date");
         }
 
-        return $date;
+        return $parsedDate;
     }
 
     /**
@@ -345,5 +359,40 @@ class Provider
             $resumptionTokenNode = $this->response->createElement('resumptionToken', $recordList->getResumptionToken());
             $listNode->appendChild($resumptionTokenNode);
         }
+    }
+
+    /**
+     * @param bool $checkMetadataPrefix
+     * @return array
+     */
+    private function getRecordListParams($checkMetadataPrefix = true)
+    {
+        $from = null;
+        $until = null;
+        $set = isset($this->request['set']) ? $this->request['set'] : null;
+
+        $checks =[
+
+            function () use (&$from) {
+                if (isset($this->request['from'])) {
+                    $from = $this->parseRequestDate($this->request['from']);
+                }
+            },
+            function () use (&$until) {
+                if (isset($this->request['until'])) {
+                    $until = $this->parseRequestDate($this->request['until']);
+                }
+            },
+        ];
+        if ($checkMetadataPrefix === true) {
+            $checks[] = function () {
+                if (!isset($this->request['metadataPrefix'])) {
+                    throw new BadArgumentException("Missing required argument metadataPrefix");
+                }
+            };
+        }
+
+        $this->doChecks($checks);
+        return array($from, $until, $set);
     }
 }
