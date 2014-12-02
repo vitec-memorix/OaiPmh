@@ -9,7 +9,6 @@
 namespace Picturae\OAI;
 
 
-
 use Picturae\OAI\Interfaces\RecordList as RecordListInterface;
 
 /**
@@ -34,7 +33,7 @@ class RecordList implements RecordListInterface
      * @param Set[] $items
      * @param null|string $resumptionToken
      */
-    public function __construct($items, $resumptionToken=null)
+    public function __construct($items, $resumptionToken = null)
     {
         $this->items = $items;
         $this->resumptionToken = $resumptionToken;

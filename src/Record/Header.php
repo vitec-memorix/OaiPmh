@@ -9,7 +9,6 @@
 namespace Picturae\OAI\Record;
 
 
-
 use Picturae\OAI\Interfaces\Record\Header as HeaderInterface;
 
 /**

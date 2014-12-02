@@ -13,7 +13,8 @@ use Picturae\OAI\Exception;
 
 class NoMetadataFormatsException extends Exception
 {
-    public function getErrorName(){
+    public function getErrorName()
+    {
         return "noMetadataFormats";
     }
 } 

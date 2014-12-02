@@ -9,12 +9,14 @@
 namespace Picturae\OAI;
 
 
-class Exception extends \InvalidArgumentException {
+class Exception extends \InvalidArgumentException
+{
 
     /**
      * @return string
      */
-    public function getErrorName(){
+    public function getErrorName()
+    {
         return null;
     }
 } 

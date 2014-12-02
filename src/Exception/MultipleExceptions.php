@@ -12,10 +12,12 @@ namespace Picturae\OAI\Exception;
 use Picturae\OAI\Exception;
 use Traversable;
 
-class MultipleExceptions extends Exception implements \IteratorAggregate {
+class MultipleExceptions extends Exception implements \IteratorAggregate
+{
     private $exceptions = [];
 
-    public function setExceptions($exceptions){
+    public function setExceptions($exceptions)
+    {
         $this->exceptions = $exceptions;
         return $this;
     }

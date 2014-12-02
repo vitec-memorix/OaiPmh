@@ -33,7 +33,7 @@ class SetList implements \Picturae\OAI\Interfaces\SetList
      * @param Set[] $items
      * @param null|string $resumptionToken
      */
-    public function __construct($items, $resumptionToken=null)
+    public function __construct($items, $resumptionToken = null)
     {
         $this->items = $items;
         $this->resumptionToken = $resumptionToken;

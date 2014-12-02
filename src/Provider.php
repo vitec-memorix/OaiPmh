@@ -126,7 +126,7 @@ class Provider
             $verbOutput = $this->doVerb();
 
             // we are sure now that all request variables are correct otherwise an error would have been thrown
-            foreach ($this->request as $k=>$v) {
+            foreach ($this->request as $k => $v) {
                 $requestNode->setAttribute($k, $v);
             }
 
@@ -287,7 +287,7 @@ class Provider
         }
 
         //create node for all sets
-        foreach($sets->getItems() as $set) {
+        foreach ($sets->getItems() as $set) {
             $setNode = $this->response->createElement('set');
             $setNode->appendChild($this->response->createElement('setSpec', $set->getSpec()));
             $setNode->appendChild($this->response->createElement('setName', $set->getName()));
@@ -385,7 +385,8 @@ class Provider
      * @param Record $record
      * @return \DOMElement
      */
-    private function getRecordHeaderNode(Record $record){
+    private function getRecordHeaderNode(Record $record)
+    {
         $headerNode = $this->response->createElement('header');
         $header = $record->getHeader();
         $headerNode->appendChild($this->response->createElement('identifier', $header->getIdentifier()));
@@ -405,7 +406,8 @@ class Provider
      * does all the checks in the closures and merge any exceptions into one big exception
      * @param \Closure[] $checks
      */
-    private function doChecks($checks){
+    private function doChecks($checks)
+    {
         $errors = [];
         foreach ($checks as $check) {
             try {
@@ -465,7 +467,7 @@ class Provider
         $until = null;
         $set = isset($this->request['set']) ? $this->request['set'] : null;
 
-        $checks =[
+        $checks = [
 
             function () use (&$from) {
                 if (isset($this->request['from'])) {
