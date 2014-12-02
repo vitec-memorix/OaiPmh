@@ -194,6 +194,11 @@ class Provider
         if (count($errors)) {
             throw (new MultipleExceptions())->setExceptions($errors);
         }
+
+        //if the resumption token is set it should be the only argument
+        if (isset($requestParams['resumptionToken']) && count($requestParams) > 1) {
+            throw new BadArgumentException("resumptionToken can not be used together with other arguments");
+        }
     }
 
     private function listSets()
