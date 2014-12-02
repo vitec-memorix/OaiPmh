@@ -199,15 +199,15 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
         $repo->setRequest(['verb' => 'ListRecords', 'from' => '2345-31-12T12:12:00Z', 'metadataPrefix' => 'oai_pmh']);
         $response = $repo->execute();
 
-        $this->assertValidResponse($response);
-        $this->assertXPathNotExists($response, "/oai:OAI-PMH/oai:error[@code='badArgument']");
+        $this->assertXPathNotExists($response, "/oai:OAI-PMH/oai:error");
 
+        //do a request with an invalid date
         $repo = $this->getProvider();
         $repo->setRequest(['verb' => 'ListRecords', 'from' => '2345-31-12', 'metadataPrefix' => 'oai_pmh']);
         $response = $repo->execute();
 
+        $this->assertXPathExists($response, "/oai:OAI-PMH/oai:error[@code='badArgument']");
         $this->assertValidResponse($response);
-        $this->assertXPathNotExists($response, "/oai:OAI-PMH/oai:error[@code='badArgument']");
     }
 
     /**
@@ -311,8 +311,7 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
                  xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/"
                  xmlns:dc="http://purl.org/dc/elements/1.1/"
                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                 xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/
-                 http://www.openarchives.org/OAI/2.0/oai_dc.xsd">
+                 xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd">
                 <dc:title>Using Structural Metadata to Localize Experience of
                           Digital Content</dc:title>
                 <dc:creator>Dushay, Naomi</dc:creator>

@@ -80,11 +80,15 @@ class Provider
     {
         $this->response = new Response();
         $this->response->addElement("responseDate", $this->toUtcDateTime(new \DateTime()));
-        $this->response->addElement("request", "/someurl");
+        $requestNode = $this->response->createElement("request", $this->repository->identify()->getBaseUrl());
+        $this->response->getDocument()->documentElement->appendChild($requestNode);
 
         try {
             $this->checkVerb();
             $verbOutput = $this->doVerb();
+            foreach ($this->request as $k=>$v) {
+                $requestNode->setAttribute($k, $v);
+            }
             $this->response->getDocument()->documentElement->appendChild($verbOutput);
         } catch (MultipleExceptions $errors) {
             foreach ($errors as $error) {
@@ -320,7 +324,7 @@ class Provider
             $date = date_create_from_format('Y-m-d', $date, $timezone);
         }
         if (!$date) {
-            throw new BadArgumentException();
+            throw new BadArgumentException("$date is not a valid date");
         }
 
         return $date;
