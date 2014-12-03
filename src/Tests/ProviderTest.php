@@ -286,9 +286,9 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
                     'testRepo',
                     'http://example.com',
                     new \DateTime(),
-                    "persistent",
+                    \Picturae\OAI\Interfaces\Repository\Identity::DELETED_RECORD_PERSISTENT,
                     ["email@example.com"],
-                    'YYYY-MM-DD',
+                    \Picturae\OAI\Interfaces\Repository\Identity::GRANULARITY_YYYY_MM_DDTHH_MM_SSZ,
                     'gzip'
                 )
             )

@@ -17,6 +17,7 @@ use Picturae\OAI\Exception\NoRecordsMatchException;
 use Picturae\OAI\Exception\NoSetHierarchyException;
 use Picturae\OAI\Interfaces\RecordList as RecordListInterface;
 use Picturae\OAI\Interfaces\Repository;
+use Picturae\OAI\Interfaces\Repository\Identity;
 
 /**
  * Class Provider
@@ -430,9 +431,18 @@ class Provider
     private function parseRequestDate($date)
     {
         $timezone = new \DateTimeZone("UTC");
-        $parsedDate = date_create_from_format('Y-m-d\TH:i:s\Z', $date, $timezone);
-        if (!$parsedDate) {
-            $parsedDate = date_create_from_format('Y-m-d', $date, $timezone);
+        $granularity = null;
+
+        if (preg_match('#^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$#', $date)) {
+            $parsedDate = date_create_from_format('Y-m-d\TH:i:s\Z', $date, $timezone);
+            $granularity = Identity::GRANULARITY_YYYY_MM_DDTHH_MM_SSZ;
+        } elseif (preg_match('#^\d{4}-\d{2}-\d{2}$#', $date)) {
+            $parsedDate = date_create_from_format('Y-m-d\TH:i:s\Z', $date, $timezone);
+            $granularity = Identity::GRANULARITY_YYYY_MM_DD;
+        } else {
+            throw new BadArgumentException("Expected a data in one of the following formats: " .
+                Identity::GRANULARITY_YYYY_MM_DDTHH_MM_SSZ . " OR " .
+                Identity::GRANULARITY_YYYY_MM_DD ." FOUND " . $date);
         }
 
         $parseResult = date_get_last_errors();
@@ -440,7 +450,7 @@ class Provider
             throw new BadArgumentException("$date is not a valid date");
         }
 
-        return $parsedDate;
+        return [$parsedDate, $granularity];
     }
 
     /**
@@ -465,20 +475,51 @@ class Provider
     {
         $from = null;
         $until = null;
+        $fromGranularity = null;
+        $untilGranularity  = null;
         $set = isset($this->request['set']) ? $this->request['set'] : null;
 
         $checks = [
-
-            function () use (&$from) {
+            function () use (&$from, &$fromGranularity) {
                 if (isset($this->request['from'])) {
-                    $from = $this->parseRequestDate($this->request['from']);
+                    list($from, $fromGranularity)  = $this->parseRequestDate($this->request['from']);
                 }
             },
-            function () use (&$until) {
+            function () use (&$until, &$untilGranularity) {
                 if (isset($this->request['until'])) {
-                    $until = $this->parseRequestDate($this->request['until']);
+                    list($until, $untilGranularity) = $this->parseRequestDate($this->request['until']);
                 }
             },
+            function () use ($from, $until) {
+                if ($from !== null and $until !== null && $from > $until) {
+                    throw new BadArgumentException(
+                        'The `from` argument must be less than or equal to the `until` argument'
+                    );
+                }
+            },
+            function () use ($from, $until, $fromGranularity, $untilGranularity) {
+                if ($from !== null and $until !== null && $fromGranularity !== $untilGranularity) {
+                    throw new BadArgumentException('The `from` and `until` arguments have different granularity');
+                }
+            },
+            function () use (&$fromGranularity) {
+                if ($fromGranularity !== null &&
+                    $fromGranularity === Identity::GRANULARITY_YYYY_MM_DDTHH_MM_SSZ &&
+                    $this->repository->identify()->getGranularity() === Identity::GRANULARITY_YYYY_MM_DD) {
+                    throw new BadArgumentException(
+                        'The granularity of the `from` argument is not supported by this repository'
+                    );
+                }
+            },
+            function () use ($untilGranularity) {
+                if ($untilGranularity !== null &&
+                    $untilGranularity === Identity::GRANULARITY_YYYY_MM_DDTHH_MM_SSZ &&
+                    $this->repository->identify()->getGranularity() === Identity::GRANULARITY_YYYY_MM_DD) {
+                    throw new BadArgumentException(
+                        'The granularity of the `until` argument is not supported by this repository'
+                    );
+                }
+            }
         ];
         if ($checkMetadataPrefix === true) {
             $checks[] = function () {
