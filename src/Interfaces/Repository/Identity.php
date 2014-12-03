@@ -11,6 +11,27 @@ namespace Picturae\OAI\Interfaces\Repository;
 
 interface Identity
 {
+    const GRANULARITY_YYYY_MM_DD = 'YYYY-MM-DD';
+    const GRANULARITY_YYYY_MM_DDTHH_MM_SSZ = 'YYYY-MM-DDThh:mm:ssZ';
+
+    /**
+     * The repository does not maintain information about deletions.
+     * A repository that indicates this level of support must not reveal a deleted status in any response.
+     */
+    const DELETED_RECORD_NO = 'no';
+
+    /**
+     * The repository maintains information about deletions with no time limit. A repository that indicates this level
+     * of support must persistently keep track of the full history of deletions and consistently reveal the status of a
+     * deleted record over time.
+     */
+    const DELETED_RECORD_PERSISTENT = 'persistent';
+
+    /**
+     * The repository does not guarantee that a list of deletions is maintained persistently or consistently.
+     * A repository that indicates this level of support may reveal a deleted status for records.
+     */
+    const DELETED_RECORD_TRANSIENT = 'transient';
 
     /**
      * @return string
