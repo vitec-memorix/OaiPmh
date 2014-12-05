@@ -20,9 +20,12 @@ class Response
     /**
      * @var string[]
      */
-    private $headers;
+    private $headers = ['Content-Type: text/xml; charset=utf8'];
 
-    private $rootNode;
+    /**
+     * @var string
+     */
+    private $status = '200 OK';
 
     /**
      * @var \DOMDocument
@@ -60,14 +63,14 @@ class Response
     {
         $this->document = new \DOMDocument('1.0', 'UTF-8');
         $this->document->formatOutput = true;
-        $this->rootNode = $this->document->createElementNS('http://www.openarchives.org/OAI/2.0/', "oai-pmh:OAI-PMH");
-        $this->rootNode->setAttributeNS(
+        $documentElement = $this->document->createElementNS('http://www.openarchives.org/OAI/2.0/', "oai-pmh:OAI-PMH");
+        $documentElement->setAttributeNS(
             "http://www.w3.org/2001/XMLSchema-instance",
             'xsi:schemaLocation',
             'http://www.openarchives.org/OAI/2.0/ http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd'
         );
 
-        $this->document->appendChild($this->rootNode);
+        $this->document->appendChild($documentElement);
     }
 
     /**
@@ -89,6 +92,7 @@ class Response
     public function addError(Exception $error)
     {
         $errorNode = $this->addElement("error", $error->getMessage());
+        $this->status = '400 Bad request';
         if ($error->getErrorName()) {
             $errorNode->setAttribute("code", $error->getErrorName());
         }
@@ -99,7 +103,9 @@ class Response
      */
     public function getHeaders()
     {
-        return $this->headers;
+        $headers = $this->headers;
+        array_unshift($headers, 'HTTP/1.0 ' . $this->status);
+        return $headers;
     }
 
     /**

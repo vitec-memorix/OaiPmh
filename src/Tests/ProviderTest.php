@@ -74,24 +74,26 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
         $xpath = new \DOMXPath($document);
         $xpath->registerNamespace("oai", 'http://www.openarchives.org/OAI/2.0/');
 
-        $this->assertGreaterThan(
-            0,
-            $xpath->query($query)->length,
+        $this->assertTrue(
+            $this->xpathExists($response, $query),
             "Didn't find expected element $query:\n" . $response->getDocument()->saveXML()
         );
     }
 
     private function assertXPathNotExists(Response $response, $query)
     {
+        $this->assertTrue(
+            !$this->xpathExists($response, $query),
+            "Found elements using query $query:\n" . $response->getDocument()->saveXML()
+        );
+    }
+
+    private function xpathExists(Response $response, $query)
+    {
         $document = $response->getDocument();
         $xpath = new \DOMXPath($document);
         $xpath->registerNamespace("oai", 'http://www.openarchives.org/OAI/2.0/');
-
-        $this->assertEquals(
-            0,
-            $xpath->query($query)->length,
-            "Found elements using query $query:\n" . $response->getDocument()->saveXML()
-        );
+        return $xpath->query($query)->length > 0;
     }
 
     private function assertValidResponse(Response $response)
@@ -101,6 +103,23 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
             'schemaLocation'
         );
         $xsd = explode(" ", $schemaLocation)[1];
+
+        $headers = $response->getHeaders();
+        $statusHeader = array_shift($headers);
+
+        $this->assertRegExp(
+            '#^HTTP/1.0 [1-5]\d{2}#',
+            $statusHeader,
+            "invalid status header or no header not found: " . $statusHeader
+        );
+
+        if ($this->xpathExists($response, '//oai:error')) {
+            $this->assertRegExp(
+                '#^HTTP/1.0 4\d{2}#',
+                $statusHeader,
+                "Expected some kind of 4xx header found: " . $statusHeader
+            );
+        }
 
         try {
             $this->assertTrue($response->getDocument()->schemaValidate($xsd));
@@ -225,7 +244,8 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
         $this->assertValidResponse($response);
     }
 
-    public function testGetRecord(){
+    public function testGetRecord()
+    {
         //no identifier
         $repo = $this->getProvider();
         $repo->setRequest(['verb' => 'GetRecord', 'metadataPrefix' => 'oai_dc']);
@@ -356,8 +376,6 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
         )->with();
 
 
-
-
         $setList = new SetList(
             [
                 new Set("a", "set A"),
@@ -426,7 +444,6 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
         $mock->expects($this->any())->method('listRecords')->will(
             $this->returnValue($recordList)
         )->with();
-
 
 
         $getRecords = function ($identifier = null) use ($someRecord) {
