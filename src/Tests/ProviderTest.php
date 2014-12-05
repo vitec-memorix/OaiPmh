@@ -225,6 +225,40 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
         $this->assertValidResponse($response);
     }
 
+    public function testGetRecord(){
+        //no identifier
+        $repo = $this->getProvider();
+        $repo->setRequest(['verb' => 'GetRecord', 'metadataPrefix' => 'oai_dc']);
+        $response = $repo->execute();
+
+        $this->assertValidResponse($response);
+        $this->assertXPathExists($response, "/oai:OAI-PMH/oai:error[@code='badArgument']");
+
+        //no metadataPrefix
+        $repo = $this->getProvider();
+        $repo->setRequest(['verb' => 'GetRecord', 'identifier' => 'a']);
+        $response = $repo->execute();
+
+        $this->assertValidResponse($response);
+        $this->assertXPathExists($response, "/oai:OAI-PMH/oai:error[@code='badArgument']");
+
+        //valid request
+        $repo = $this->getProvider();
+        $repo->setRequest(['verb' => 'GetRecord', 'metadataPrefix' => 'oai_dc', 'identifier' => 'a']);
+        $response = $repo->execute();
+
+        $this->assertValidResponse($response);
+        $this->assertXPathNotExists($response, "/oai:OAI-PMH/oai:error[@code='badArgument']");
+
+        //valid request
+        $repo = $this->getProvider();
+        $repo->setRequest(['verb' => 'GetRecord', 'metadataPrefix' => 'oai_dc', 'identifier' => 'b']);
+        $response = $repo->execute();
+
+        $this->assertValidResponse($response);
+        $this->assertXPathNotExists($response, "/oai:OAI-PMH/oai:error[@code='IdDoesNotExistException']");
+    }
+
     public function testListIdentifiers()
     {
         $repo = $this->getProvider();
@@ -321,6 +355,9 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
             $this->returnCallback($listFormats)
         )->with();
 
+
+
+
         $setList = new SetList(
             [
                 new Set("a", "set A"),
@@ -377,15 +414,32 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
                 <dc:date>2001-12-14</dc:date>
             </oai_dc:dc>'
         );
+
+        $someRecord = new Record(new Header("id1", new \DateTime()), $recordMetadata);
         $recordList = new RecordList(
             [
-                new Record(new Header("id1", new \DateTime()), $recordMetadata),
+                $someRecord,
             ],
             'resumptionToken'
         );
 
         $mock->expects($this->any())->method('listRecords')->will(
             $this->returnValue($recordList)
+        )->with();
+
+
+
+        $getRecords = function ($identifier = null) use ($someRecord) {
+            switch ($identifier) {
+                case "a":
+                    return $someRecord;
+                default:
+                    throw new IdDoesNotExistException();
+            }
+        };
+
+        $mock->expects($this->any())->method('getRecord')->will(
+            $this->returnCallback($getRecords)
         )->with();
 
         return $mock;

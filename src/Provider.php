@@ -169,10 +169,48 @@ class Provider
             case "ListIdentifiers":
                 return $this->listIdentifiers();
                 break;
+            case "GetRecord":
+                return $this->getRecord();
+                break;
             default:
                 //shouldn't be possible to come here because verb was already checked, but just in case
                 throw new BadVerbException("$this->verb is not a valid verb");
         }
+    }
+
+    /**
+     * handles GetRecord requests
+     * @return \DOMElement
+     */
+    private function getRecord(){
+        $checks = [
+            function () {
+                if (!isset($this->request['metadataPrefix'])) {
+                    throw new BadArgumentException("Missing required argument metadataPrefix");
+                }
+
+            },
+            function () {
+                if (!isset($this->request['identifier'])) {
+                    throw new BadArgumentException("Missing required argument identifier");
+                }
+            }
+        ];
+        $this->doChecks($checks);
+
+        $record = $this->repository->getRecord($this->request['metadataPrefix'], $this->request['identifier']);
+        var_dump( $record);
+        $recordNode = $this->response->createElement('record');
+        $recordNode->appendChild($this->getRecordHeaderNode($record));
+        $recordNode->appendChild($this->response->createElement('metadata', $record->getMetadata()));
+
+        //only add an 'about' node if it's not null
+        $about = $record->getAbout();
+        if ($about !== null) {
+            $recordNode->appendChild($this->response->createElement('about', $about));
+        }
+
+        return $recordNode;
     }
 
     /**
@@ -383,10 +421,10 @@ class Provider
 
     /**
      * Converts the header of a record to a header node, used for both ListRecords and ListIdentifiers
-     * @param Record $record
+     * @param Interfaces\Record $record
      * @return \DOMElement
      */
-    private function getRecordHeaderNode(Record $record)
+    private function getRecordHeaderNode(Interfaces\Record $record)
     {
         $headerNode = $this->response->createElement('header');
         $header = $record->getHeader();
