@@ -8,7 +8,12 @@
 
 namespace Picturae\OAI\Repository;
 
-
+/**
+ * Class Identity
+ * Basic implementation of \Picturae\OAI\Interfaces\Repository\Identity
+ *
+ * @package Picturae\OAI\Repository
+ */
 class Identity implements \Picturae\OAI\Interfaces\Repository\Identity
 {
     /**

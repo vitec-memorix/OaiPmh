@@ -20,9 +20,12 @@ class Response
     /**
      * @var string[]
      */
-    private $headers;
+    private $headers = ['Content-Type: text/xml; charset=utf8'];
 
-    private $rootNode;
+    /**
+     * @var string
+     */
+    private $status = '200 OK';
 
     /**
      * @var \DOMDocument
@@ -53,30 +56,43 @@ class Response
         return $this->document->saveXML();
     }
 
+    /**
+     *
+     */
     public function __construct()
     {
-        $this->document = new \DOMDocument();
+        $this->document = new \DOMDocument('1.0', 'UTF-8');
         $this->document->formatOutput = true;
-        $this->rootNode = $this->document->createElementNS('http://www.openarchives.org/OAI/2.0/', "oai-pmh:OAI-PMH");
-        $this->rootNode->setAttributeNS(
+        $documentElement = $this->document->createElementNS('http://www.openarchives.org/OAI/2.0/', "oai-pmh:OAI-PMH");
+        $documentElement->setAttributeNS(
             "http://www.w3.org/2001/XMLSchema-instance",
             'xsi:schemaLocation',
             'http://www.openarchives.org/OAI/2.0/ http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd'
         );
 
-        $this->document->appendChild($this->rootNode);
+        $this->document->appendChild($documentElement);
     }
 
-    public function addElement($name, $value = null, $nameSpace=null)
+    /**
+     * @param $name
+     * @param string $value
+     * @return \DOMElement
+     */
+    public function addElement($name, $value = null)
     {
-        $element = $this->createElement($name, $value, $nameSpace);
+        $element = $this->createElement($name, $value, null);
         $this->document->documentElement->appendChild($element);
         return $element;
     }
 
+    /**
+     * adds an error node base on a Exception
+     * @param Exception $error
+     */
     public function addError(Exception $error)
     {
         $errorNode = $this->addElement("error", $error->getMessage());
+        $this->status = '400 Bad request';
         if ($error->getErrorName()) {
             $errorNode->setAttribute("code", $error->getErrorName());
         }
@@ -87,7 +103,9 @@ class Response
      */
     public function getHeaders()
     {
-        return $this->headers;
+        $headers = $this->headers;
+        array_unshift($headers, 'HTTP/1.0 ' . $this->status);
+        return $headers;
     }
 
     /**
@@ -109,6 +127,7 @@ class Response
     }
 
     /**
+     * prints headers
      * @return $this
      */
     public function printHeaders()
@@ -120,23 +139,23 @@ class Response
     }
 
     /**
-     *
+     * output header, body and then exits
      */
     public function outputAndExit()
     {
         $this->printHeaders();
         echo $this->output;
+        exit;
     }
 
     /**
-     * @param $name
-     * @param $value
-     * @param $nameSpace
+     * @param string $name
+     * @param \DOMDocument|string $value
      * @return \DOMElement
      */
-    public function createElement($name, $value = null, $nameSpace = null)
+    public function createElement($name, $value = null)
     {
-        $nameSpace = $nameSpace ?: 'http://www.openarchives.org/OAI/2.0/';
+        $nameSpace = 'http://www.openarchives.org/OAI/2.0/';
 
         if ($value instanceof \DOMDocument) {
             $element = $this->document->createElementNS($nameSpace, $name, null);

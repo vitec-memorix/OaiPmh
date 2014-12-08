@@ -12,7 +12,8 @@ use Picturae\OAI\Exception;
 
 class CannotDisseminateFormatException extends Exception
 {
-    public function getErrorName(){
+    public function getErrorName()
+    {
         return "cannotDisseminateFormat";
     }
 } 

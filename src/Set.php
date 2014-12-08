@@ -10,6 +10,12 @@ namespace Picturae\OAI;
 
 use Picturae\OAI\Interfaces\Set as SetInterface;
 
+/**
+ * Class Set
+ * Basic implementation of Picturae\OAI\Interfaces\Set
+ *
+ * @package Picturae\OAI
+ */
 class Set implements SetInterface
 {
     /**

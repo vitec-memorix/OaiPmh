@@ -13,7 +13,8 @@ use Picturae\OAI\Exception;
 
 class BadVerbException extends Exception
 {
-    public function getErrorName(){
+    public function getErrorName()
+    {
         return "badVerb";
     }
 } 
