@@ -199,7 +199,6 @@ class Provider
         $this->doChecks($checks);
 
         $record = $this->repository->getRecord($this->request['metadataPrefix'], $this->request['identifier']);
-        var_dump( $record);
         $recordNode = $this->response->createElement('record');
         $recordNode->appendChild($this->getRecordHeaderNode($record));
         $recordNode->appendChild($this->response->createElement('metadata', $record->getMetadata()));
@@ -210,7 +209,10 @@ class Provider
             $recordNode->appendChild($this->response->createElement('about', $about));
         }
 
-        return $recordNode;
+        $getRecordNode = $this->response->createElement('GetRecord');
+        $getRecordNode->appendChild($recordNode);
+
+        return $getRecordNode;
     }
 
     /**

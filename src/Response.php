@@ -159,7 +159,7 @@ class Response
 
         if ($value instanceof \DOMDocument) {
             $element = $this->document->createElementNS($nameSpace, $name, null);
-            $node = $this->document->importNode($value->documentElement);
+            $node = $this->document->importNode($value->documentElement, true);
             $element->appendChild($node);
         } else {
             $element = $this->document->createElementNS($nameSpace, $name, $value);
