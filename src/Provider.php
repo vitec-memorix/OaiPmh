@@ -293,7 +293,7 @@ class Provider
         unset($requestParams['verb']);
 
         $errors = [];
-        foreach (array_diff(array_keys($requestParams), self::$verbs[$this->verb]) as $key => $value) {
+        foreach (array_diff_key($requestParams, array_flip(self::$verbs[$this->verb])) as $key => $value) {
             $errors[] = new BadArgumentException(
                 "Argument {$key} is not allowed for verb $this->verb. " .
                 "Allowed arguments are: " . implode(", ", self::$verbs[$this->verb])
