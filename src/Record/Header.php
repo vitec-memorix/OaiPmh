@@ -6,16 +6,15 @@
  * Time: 4:11 PM
  */
 
-namespace Picturae\OAI\Record;
+namespace Picturae\OaiPmh\Record;
 
-
-use Picturae\OAI\Interfaces\Record\Header as HeaderInterface;
+use Picturae\OaiPmh\Interfaces\Record\Header as HeaderInterface;
 
 /**
  * Class Header
- * Basic implementation of \Picturae\OAI\Interfaces\Record\Header
+ * Basic implementation of \Picturae\OaiPmh\Interfaces\Record\Header
  *
- * @package Picturae\OAI\Record
+ * @package Picturae\OaiPmh\Record
  */
 class Header implements HeaderInterface
 {
@@ -89,5 +88,4 @@ class Header implements HeaderInterface
     {
         return $this->deleted;
     }
-
 }

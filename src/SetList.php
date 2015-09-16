@@ -6,18 +6,17 @@
  * Time: 4:11 PM
  */
 
-namespace Picturae\OAI;
+namespace Picturae\OaiPmh;
 
-
-use Picturae\OAI\Interfaces\Set as SetInterface;
+use Picturae\OaiPmh\Interfaces\Set as SetInterface;
 
 /**
  * Class SetList
- * Basic implementation of Picturae\OAI\Interfaces\SetList
+ * Basic implementation of Picturae\OaiPmh\Interfaces\SetList
  *
- * @package Picturae\OAI
+ * @package Picturae\OaiPmh
  */
-class SetList implements \Picturae\OAI\Interfaces\SetList
+class SetList implements \Picturae\OaiPmh\Interfaces\SetList
 {
     /**
      * @var string
@@ -55,5 +54,4 @@ class SetList implements \Picturae\OAI\Interfaces\SetList
     {
         return $this->items;
     }
-
-} 
+}

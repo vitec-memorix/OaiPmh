@@ -6,8 +6,7 @@
  * Time: 14:32
  */
 
-namespace Picturae\OAI\Interfaces\Record;
-
+namespace Picturae\OaiPmh\Interfaces\Record;
 
 interface Header
 {

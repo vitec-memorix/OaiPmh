@@ -6,16 +6,16 @@
  * Time: 4:11 PM
  */
 
-namespace Picturae\OAI;
+namespace Picturae\OaiPmh;
 
-use Picturae\OAI\Interfaces\Record as RecordInterface;
-use Picturae\OAI\Interfaces\Record\Header;
+use Picturae\OaiPmh\Interfaces\Record as RecordInterface;
+use Picturae\OaiPmh\Interfaces\Record\Header;
 
 /**
  * Class Record
- * Basic implementation of Picturae\OAI\Interfaces\Record
+ * Basic implementation of Picturae\OaiPmh\Interfaces\Record
  *
- * @package Picturae\OAI
+ * @package Picturae\OaiPmh
  */
 class Record implements RecordInterface
 {
@@ -39,7 +39,7 @@ class Record implements RecordInterface
      * @param \DOMDocument $metadata
      * @param \DOMDocument $about
      */
-    function __construct(Header $header, \DOMDocument $metadata, \DOMDocument $about = null)
+    public function __construct(Header $header, \DOMDocument $metadata, \DOMDocument $about = null)
     {
         $this->about = $about;
         $this->header = $header;

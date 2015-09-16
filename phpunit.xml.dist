@@ -11,7 +11,7 @@
          bootstrap="vendor/autoload.php"
 >
     <testsuites>
-        <testsuite name="Picturae OAI Test Suite">
+        <testsuite name="Picturae OAI-PMH Test Suite">
             <directory>./tests/</directory>
         </testsuite>
     </testsuites>

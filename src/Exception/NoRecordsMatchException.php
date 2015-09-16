@@ -6,10 +6,9 @@
  * Time: 10:19 AM
  */
 
-namespace Picturae\OAI\Exception;
+namespace Picturae\OaiPmh\Exception;
 
-
-use Picturae\OAI\Exception;
+use Picturae\OaiPmh\Exception;
 
 class NoRecordsMatchException extends Exception
 {
@@ -17,4 +16,4 @@ class NoRecordsMatchException extends Exception
     {
         return "noRecordsMatch";
     }
-} 
+}

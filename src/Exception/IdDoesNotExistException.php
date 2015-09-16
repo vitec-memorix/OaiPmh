@@ -6,10 +6,9 @@
  * Time: 10:16 AM
  */
 
-namespace Picturae\OAI\Exception;
+namespace Picturae\OaiPmh\Exception;
 
-
-use Picturae\OAI\Exception;
+use Picturae\OaiPmh\Exception;
 
 class IdDoesNotExistException extends Exception
 {
@@ -17,4 +16,4 @@ class IdDoesNotExistException extends Exception
     {
         return "idDoesNotExist";
     }
-} 
+}

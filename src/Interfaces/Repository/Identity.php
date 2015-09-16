@@ -6,8 +6,7 @@
  * Time: 14:21
  */
 
-namespace Picturae\OAI\Interfaces\Repository;
-
+namespace Picturae\OaiPmh\Interfaces\Repository;
 
 interface Identity
 {

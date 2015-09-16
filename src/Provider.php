@@ -6,18 +6,19 @@
  * Time: 15:42
  */
 
-namespace Picturae\OAI;
+namespace Picturae\OaiPmh;
 
-
-use Picturae\OAI\Exception\BadArgumentException;
-use Picturae\OAI\Exception\BadVerbException;
-use Picturae\OAI\Exception\MultipleExceptions;
-use Picturae\OAI\Exception\NoMetadataFormatsException;
-use Picturae\OAI\Exception\NoRecordsMatchException;
-use Picturae\OAI\Exception\NoSetHierarchyException;
-use Picturae\OAI\Interfaces\RecordList as RecordListInterface;
-use Picturae\OAI\Interfaces\Repository;
-use Picturae\OAI\Interfaces\Repository\Identity;
+use Picturae\OaiPmh\Exception\BadArgumentException;
+use Picturae\OaiPmh\Exception\BadVerbException;
+use Picturae\OaiPmh\Exception\MultipleExceptions;
+use Picturae\OaiPmh\Exception\NoMetadataFormatsException;
+use Picturae\OaiPmh\Exception\NoRecordsMatchException;
+use Picturae\OaiPmh\Exception\NoSetHierarchyException;
+use Picturae\OaiPmh\Interfaces\RecordList as RecordListInterface;
+use Picturae\OaiPmh\Interfaces\Repository;
+use Picturae\OaiPmh\Interfaces\Repository\Identity;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\ResponseInterface;
 
 /**
  * Class Provider
@@ -26,8 +27,8 @@ use Picturae\OAI\Interfaces\Repository\Identity;
  * <code>
  *
  * //create provider object
- * $provider = new Picturae\OAI\Provider($someRepository);
- * //where some $someRepository is an implementation of \Picturae\OAI\Interfaces\Repository
+ * $provider = new Picturae\OaiPmh\Provider($someRepository);
+ * //where some $someRepository is an implementation of \Picturae\OaiPmh\Interfaces\Repository
  *
  * // add request variables, this could be just $_GET or $_POST in case of a post but can also come from a different
  * // source
@@ -39,7 +40,7 @@ use Picturae\OAI\Interfaces\Repository\Identity;
  * //output headers, body and then exit (it is possible to do manipulations before outputting but this is not advised.
  * $response->outputAndExit();
  * </code>
- * @package Picturae\OAI
+ * @package Picturae\OaiPmh
  */
 class Provider
 {
@@ -62,7 +63,7 @@ class Provider
     private $verb;
 
     /**
-     * @var Response
+     * @var ResponseDocument
      */
     private $response;
 
@@ -74,7 +75,12 @@ class Provider
     /**
      * @var array
      */
-    private $request = [];
+    private $params = [];
+
+    /**
+     * @var ServerRequestInterface
+     */
+    private $request;
 
     /**
      * @param Repository $repository
@@ -85,7 +91,7 @@ class Provider
     }
 
     /**
-     * @return array
+     * @return ServerRequestInterface
      */
     public function getRequest()
     {
@@ -93,10 +99,15 @@ class Provider
     }
 
     /**
-     * @param array $request
+     * @param ServerRequestInterface $request
      */
-    public function setRequest(array $request)
+    public function setRequest(ServerRequestInterface $request)
     {
+        if ($request->getMethod() === 'POST') {
+            $this->params = $request->getParsedBody();
+        } else {
+            $this->params = $request->getQueryParams();
+        }
         $this->request = $request;
     }
 
@@ -113,11 +124,11 @@ class Provider
 
     /**
      * handles the current request
-     * @return Response
+     * @return ResponseInterface
      */
     public function execute()
     {
-        $this->response = new Response();
+        $this->response = new ResponseDocument();
         $this->response->addElement("responseDate", $this->toUtcDateTime(new \DateTime()));
         $requestNode = $this->response->createElement("request", $this->repository->identify()->getBaseUrl());
         $this->response->getDocument()->documentElement->appendChild($requestNode);
@@ -127,7 +138,7 @@ class Provider
             $verbOutput = $this->doVerb();
 
             // we are sure now that all request variables are correct otherwise an error would have been thrown
-            foreach ($this->request as $k => $v) {
+            foreach ($this->params as $k => $v) {
                 $requestNode->setAttribute($k, $v);
             }
 
@@ -144,7 +155,7 @@ class Provider
             $this->response->addError($error);
         }
 
-        return $this->response;
+        return $this->response->getResponse();
     }
 
     /**
@@ -182,23 +193,24 @@ class Provider
      * handles GetRecord requests
      * @return \DOMElement
      */
-    private function getRecord(){
+    private function getRecord()
+    {
         $checks = [
             function () {
-                if (!isset($this->request['metadataPrefix'])) {
+                if (!isset($this->params['metadataPrefix'])) {
                     throw new BadArgumentException("Missing required argument metadataPrefix");
                 }
 
             },
             function () {
-                if (!isset($this->request['identifier'])) {
+                if (!isset($this->params['identifier'])) {
                     throw new BadArgumentException("Missing required argument identifier");
                 }
             }
         ];
         $this->doChecks($checks);
 
-        $record = $this->repository->getRecord($this->request['metadataPrefix'], $this->request['identifier']);
+        $record = $this->repository->getRecord($this->params['metadataPrefix'], $this->params['identifier']);
         $recordNode = $this->response->createElement('record');
         $recordNode->appendChild($this->getRecordHeaderNode($record));
         $recordNode->appendChild($this->response->createElement('metadata', $record->getMetadata()));
@@ -254,7 +266,7 @@ class Provider
     {
         $listNode = $this->response->createElement('ListMetadataFormats');
 
-        $identifier = isset($this->request['identifier']) ? $this->request['identifier'] : null;
+        $identifier = isset($this->params['identifier']) ? $this->params['identifier'] : null;
         $formats = $this->repository->listMetadataFormats($identifier);
 
         if (!count($formats)) {
@@ -277,11 +289,11 @@ class Provider
      */
     private function checkVerb()
     {
-        if (!isset($this->request['verb'])) {
+        if (!isset($this->params['verb'])) {
             throw new BadVerbException("Verb is missing");
         }
 
-        $this->verb = $this->request['verb'];
+        $this->verb = $this->params['verb'];
         if (is_array($this->verb)) {
             throw new BadVerbException("Only 1 verb allowed, multiple given");
         }
@@ -289,7 +301,7 @@ class Provider
             throw new BadVerbException("$this->verb is not a valid verb");
         }
 
-        $requestParams = $this->request;
+        $requestParams = $this->params;
         unset($requestParams['verb']);
 
         $errors = [];
@@ -318,8 +330,8 @@ class Provider
         $listNode = $this->response->createElement('ListSets');
 
         // fetch the sets either by resumption token or without
-        if (isset($this->request['resumptionToken'])) {
-            $sets = $this->repository->listSetsByToken($this->request['resumptionToken']);
+        if (isset($this->params['resumptionToken'])) {
+            $sets = $this->repository->listSetsByToken($this->params['resumptionToken']);
         } else {
             $sets = $this->repository->listSets();
             if (!count($sets->getItems())) {
@@ -350,12 +362,12 @@ class Provider
     private function listRecords()
     {
         $listNode = $this->response->createElement('ListRecords');
-        if (isset($this->request['resumptionToken'])) {
-            $records = $this->repository->listRecordsByToken($this->request['resumptionToken']);
+        if (isset($this->params['resumptionToken'])) {
+            $records = $this->repository->listRecordsByToken($this->params['resumptionToken']);
         } else {
             list($from, $until, $set) = $this->getRecordListParams();
 
-            $metadataFormat = $this->request['metadataPrefix'];
+            $metadataFormat = $this->params['metadataPrefix'];
             $records = $this->repository->listRecords($metadataFormat, $from, $until, $set);
 
             if (!count($records->getItems())) {
@@ -394,8 +406,8 @@ class Provider
     private function listIdentifiers()
     {
         $listNode = $this->response->createElement('ListRecords');
-        if (isset($this->request['resumptionToken'])) {
-            $records = $this->repository->listRecordsByToken($this->request['resumptionToken']);
+        if (isset($this->params['resumptionToken'])) {
+            $records = $this->repository->listRecordsByToken($this->params['resumptionToken']);
         } else {
             list($from, $until, $set) = $this->getRecordListParams(false);
             $records = $this->repository->listRecords(null, $from, $until, $set);
@@ -517,17 +529,17 @@ class Provider
         $until = null;
         $fromGranularity = null;
         $untilGranularity  = null;
-        $set = isset($this->request['set']) ? $this->request['set'] : null;
+        $set = isset($this->params['set']) ? $this->params['set'] : null;
 
         $checks = [
             function () use (&$from, &$fromGranularity) {
-                if (isset($this->request['from'])) {
-                    list($from, $fromGranularity)  = $this->parseRequestDate($this->request['from']);
+                if (isset($this->params['from'])) {
+                    list($from, $fromGranularity)  = $this->parseRequestDate($this->params['from']);
                 }
             },
             function () use (&$until, &$untilGranularity) {
-                if (isset($this->request['until'])) {
-                    list($until, $untilGranularity) = $this->parseRequestDate($this->request['until']);
+                if (isset($this->params['until'])) {
+                    list($until, $untilGranularity) = $this->parseRequestDate($this->params['until']);
                 }
             },
             function () use ($from, $until) {
@@ -563,7 +575,7 @@ class Provider
         ];
         if ($checkMetadataPrefix === true) {
             $checks[] = function () {
-                if (!isset($this->request['metadataPrefix'])) {
+                if (!isset($this->params['metadataPrefix'])) {
                     throw new BadArgumentException("Missing required argument metadataPrefix");
                 }
             };

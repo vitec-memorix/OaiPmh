@@ -6,10 +6,9 @@
  * Time: 12:56
  */
 
-namespace Picturae\OAI\Interfaces;
+namespace Picturae\OaiPmh\Interfaces;
 
-
-use Picturae\OAI\Interfaces\Record\Header;
+use Picturae\OaiPmh\Interfaces\Record\Header;
 
 interface Record
 {

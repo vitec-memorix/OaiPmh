@@ -6,10 +6,16 @@
  * Time: 15:42
  */
 
-namespace Picturae\OAI;
+namespace Picturae\OaiPmh;
 
+use GuzzleHttp\Psr7\Response;
+use Psr\Http\Message\ResponseInterface;
 
-class Response
+/**
+ * Class ResponseDocument
+ * @internal
+ */
+class ResponseDocument
 {
 
     /**
@@ -25,7 +31,7 @@ class Response
     /**
      * @var string
      */
-    private $status = '200 OK';
+    private $status = '200';
 
     /**
      * @var \DOMDocument
@@ -47,15 +53,6 @@ class Response
     {
         $this->document = $document;
     }
-
-    /**
-     * @return string
-     */
-    public function getOutput()
-    {
-        return $this->document->saveXML();
-    }
-
     /**
      *
      */
@@ -81,7 +78,7 @@ class Response
      */
     public function addElement($name, $value = null)
     {
-        $element = $this->createElement($name, $value, null);
+        $element = $this->createElement($name, $value);
         $this->document->documentElement->appendChild($element);
         return $element;
     }
@@ -93,20 +90,10 @@ class Response
     public function addError(Exception $error)
     {
         $errorNode = $this->addElement("error", $error->getMessage());
-        $this->status = '400 Bad request';
+        $this->status = '400';
         if ($error->getErrorName()) {
             $errorNode->setAttribute("code", $error->getErrorName());
         }
-    }
-
-    /**
-     * @return \string[]
-     */
-    public function getHeaders()
-    {
-        $headers = $this->headers;
-        array_unshift($headers, 'HTTP/1.0 ' . $this->status);
-        return $headers;
     }
 
     /**
@@ -128,28 +115,6 @@ class Response
     }
 
     /**
-     * prints headers
-     * @return $this
-     */
-    public function printHeaders()
-    {
-        foreach ($this->headers as $header) {
-            header($header);
-        }
-        return $this;
-    }
-
-    /**
-     * output header, body and then exits
-     */
-    public function outputAndExit()
-    {
-        $this->printHeaders();
-        echo $this->output;
-        exit;
-    }
-
-    /**
      * @param string $name
      * @param \DOMDocument|string $value
      * @return \DOMElement
@@ -166,5 +131,13 @@ class Response
             $element = $this->document->createElementNS($nameSpace, $name, $value);
         }
         return $element;
+    }
+
+    /**
+     * @return ResponseInterface
+     */
+    public function getResponse()
+    {
+        return new Response($this->status, $this->headers, $this->document->saveXML());
     }
 }
