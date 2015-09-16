@@ -6,7 +6,7 @@
  * Time: 11:34 AM
  */
 
-namespace Picturae\OAI\Tests;
+namespace Test\Picturae\OAI;
 
 
 use Picturae\OAI\Exception\BadResumptionTokenException;

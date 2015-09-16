@@ -12,15 +12,12 @@
 >
     <testsuites>
         <testsuite name="Picturae OAI Test Suite">
-            <directory>./src/Tests/</directory>
+            <directory>./tests/</directory>
         </testsuite>
     </testsuites>
     <filter>
         <whitelist>
             <directory>./src</directory>
-            <exclude>
-                <directory>./src/Tests</directory>
-            </exclude>
         </whitelist>
     </filter>
 </phpunit>
