@@ -63,7 +63,7 @@ class Response
     {
         $this->document = new \DOMDocument('1.0', 'UTF-8');
         $this->document->formatOutput = true;
-        $documentElement = $this->document->createElement("OAI-PMH");
+        $documentElement = $this->document->createElementNS('http://www.openarchives.org/OAI/2.0/', "OAI-PMH");
         $documentElement->setAttribute('xmlns', 'http://www.openarchives.org/OAI/2.0/');
         $documentElement->setAttributeNS(
             "http://www.w3.org/2001/XMLSchema-instance",
