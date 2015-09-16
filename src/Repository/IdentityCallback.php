@@ -6,15 +6,15 @@
  * Time: 15:55
  */
 
-namespace Picturae\OAI\Repository;
+namespace Picturae\OaiPmh\Repository;
 
 /**
  * Class Identity
- * Basic implementation of \Picturae\OAI\Interfaces\Repository\Identity
+ * Basic implementation of \Picturae\OaiPmh\Interfaces\Repository\Identity
  *
- * @package Picturae\OAI\Repository
+ * @package Picturae\OaiPmh\Repository
  */
-class IdentityCallback implements \Picturae\OAI\Interfaces\Repository\Identity
+class IdentityCallback implements \Picturae\OaiPmh\Interfaces\Repository\Identity
 {
     /**
      * @var string
@@ -87,7 +87,8 @@ class IdentityCallback implements \Picturae\OAI\Interfaces\Repository\Identity
         $this->description = $description;
     }
     
-    private function load(&$valueOrCallback){
+    private function load(&$valueOrCallback)
+    {
         if ($valueOrCallback instanceof \Closure) {
             $valueOrCallback = $valueOrCallback();
         }
@@ -100,7 +101,7 @@ class IdentityCallback implements \Picturae\OAI\Interfaces\Repository\Identity
      */
     public function getRepositoryName()
     {
-        return $this->load( $this->repositoryName);
+        return $this->load($this->repositoryName);
     }
 
     /**
@@ -108,7 +109,7 @@ class IdentityCallback implements \Picturae\OAI\Interfaces\Repository\Identity
      */
     public function getBaseUrl()
     {
-        return $this->load( $this->baseUrl);
+        return $this->load($this->baseUrl);
     }
 
     /**
@@ -120,7 +121,7 @@ class IdentityCallback implements \Picturae\OAI\Interfaces\Repository\Identity
      */
     public function getEarliestDatestamp()
     {
-        return $this->load( $this->earliestDatestamp);
+        return $this->load($this->earliestDatestamp);
     }
 
     /**
@@ -133,7 +134,7 @@ class IdentityCallback implements \Picturae\OAI\Interfaces\Repository\Identity
      */
     public function getDeletedRecord()
     {
-        return $this->load( $this->deletedRecord);
+        return $this->load($this->deletedRecord);
     }
 
     /**
@@ -143,7 +144,7 @@ class IdentityCallback implements \Picturae\OAI\Interfaces\Repository\Identity
      */
     public function getGranularity()
     {
-        return $this->load( $this->granularity);
+        return $this->load($this->granularity);
     }
 
     /**
@@ -151,7 +152,7 @@ class IdentityCallback implements \Picturae\OAI\Interfaces\Repository\Identity
      */
     public function getAdminEmails()
     {
-        return $this->load( $this->adminEmails);
+        return $this->load($this->adminEmails);
     }
 
     /**
@@ -161,7 +162,7 @@ class IdentityCallback implements \Picturae\OAI\Interfaces\Repository\Identity
      */
     public function getCompression()
     {
-        return $this->load( $this->compression);
+        return $this->load($this->compression);
     }
 
     /**
@@ -173,6 +174,6 @@ class IdentityCallback implements \Picturae\OAI\Interfaces\Repository\Identity
      */
     public function getDescription()
     {
-        return $this->load( $this->description);
+        return $this->load($this->description);
     }
 }

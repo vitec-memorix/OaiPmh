@@ -6,8 +6,7 @@
  * Time: 11:09
  */
 
-namespace Picturae\OAI\Interfaces;
-
+namespace Picturae\OaiPmh\Interfaces;
 
 interface SetList extends ResultList
 {

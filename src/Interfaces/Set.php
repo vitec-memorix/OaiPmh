@@ -6,8 +6,7 @@
  * Time: 12:56
  */
 
-namespace Picturae\OAI\Interfaces;
-
+namespace Picturae\OaiPmh\Interfaces;
 
 interface Set
 {

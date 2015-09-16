@@ -6,8 +6,7 @@
  * Time: 10:14 AM
  */
 
-namespace Picturae\OAI;
-
+namespace Picturae\OaiPmh;
 
 class Exception extends \InvalidArgumentException
 {
@@ -19,4 +18,4 @@ class Exception extends \InvalidArgumentException
     {
         return null;
     }
-} 
+}

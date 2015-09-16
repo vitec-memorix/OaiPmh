@@ -6,8 +6,7 @@
  * Time: 3:07 PM
  */
 
-namespace Picturae\OAI\Interfaces;
-
+namespace Picturae\OaiPmh\Interfaces;
 
 class MetadataFormat implements MetadataFormatType
 {
@@ -68,5 +67,4 @@ class MetadataFormat implements MetadataFormatType
     {
         return $this->namespace;
     }
-
-} 
+}

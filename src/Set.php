@@ -6,15 +6,15 @@
  * Time: 4:11 PM
  */
 
-namespace Picturae\OAI;
+namespace Picturae\OaiPmh;
 
-use Picturae\OAI\Interfaces\Set as SetInterface;
+use Picturae\OaiPmh\Interfaces\Set as SetInterface;
 
 /**
  * Class Set
- * Basic implementation of Picturae\OAI\Interfaces\Set
+ * Basic implementation of Picturae\OaiPmh\Interfaces\Set
  *
- * @package Picturae\OAI
+ * @package Picturae\OaiPmh
  */
 class Set implements SetInterface
 {
@@ -76,6 +76,4 @@ class Set implements SetInterface
     {
         return $this->description;
     }
-
-
-} 
+}

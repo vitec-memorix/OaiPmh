@@ -6,15 +6,15 @@
  * Time: 15:55
  */
 
-namespace Picturae\OAI\Repository;
+namespace Picturae\OaiPmh\Repository;
 
 /**
  * Class Identity
- * Basic implementation of \Picturae\OAI\Interfaces\Repository\Identity
+ * Basic implementation of \Picturae\OaiPmh\Interfaces\Repository\Identity
  *
- * @package Picturae\OAI\Repository
+ * @package Picturae\OaiPmh\Repository
  */
-class Identity implements \Picturae\OAI\Interfaces\Repository\Identity
+class Identity implements \Picturae\OaiPmh\Interfaces\Repository\Identity
 {
     /**
      * @var string

@@ -6,10 +6,9 @@
  * Time: 2:27 PM
  */
 
-namespace Picturae\OAI\Exception;
+namespace Picturae\OaiPmh\Exception;
 
-
-use Picturae\OAI\Exception;
+use Picturae\OaiPmh\Exception;
 use Traversable;
 
 class MultipleExceptions extends Exception implements \IteratorAggregate
@@ -33,6 +32,4 @@ class MultipleExceptions extends Exception implements \IteratorAggregate
     {
         return new \ArrayIterator($this->exceptions);
     }
-
-
-} 
+}

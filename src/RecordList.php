@@ -6,16 +6,15 @@
  * Time: 4:11 PM
  */
 
-namespace Picturae\OAI;
+namespace Picturae\OaiPmh;
 
-
-use Picturae\OAI\Interfaces\RecordList as RecordListInterface;
+use Picturae\OaiPmh\Interfaces\RecordList as RecordListInterface;
 
 /**
  * Class RecordList
- * Basic implementation of Picturae\OAI\Interfaces\RecordList
+ * Basic implementation of Picturae\OaiPmh\Interfaces\RecordList
  *
- * @package Picturae\OAI
+ * @package Picturae\OaiPmh
  */
 class RecordList implements RecordListInterface
 {
@@ -55,5 +54,4 @@ class RecordList implements RecordListInterface
     {
         return $this->items;
     }
-
-} 
+}
