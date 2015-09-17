@@ -38,4 +38,17 @@ if ($return_phpunit !== 0) {
     echo implode("\n", $phpunit_output), "\n";
     $exit_status = 1;
 }
+
+exec("./vendor/bin/licenser run src contrib/licenseHeader.txt -c", $licenser_output, $return_licenser);
+if (empty($licenser_output)) {
+    echo implode("\n", $licenser_output), "\n";
+    $exit_status = 1;
+}
+
+exec("./vendor/bin/licenser run tests contrib/licenseHeader.txt -c", $licenser_output, $return_licenser);
+if (empty($licenser_output)) {
+    echo implode("\n", $licenser_output), "\n";
+    $exit_status = 1;
+}
+
 exit($exit_status);
