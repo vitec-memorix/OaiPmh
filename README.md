@@ -1,7 +1,7 @@
-[![Latest Version](https://img.shields.io/packagist/v/picturae/oai-pmh.svg?style=flat-square)](https://packagist.org/packages/league/html-to-markdown)
+[![Latest Version](https://img.shields.io/packagist/v/picturae/oai-pmh.svg)](https://packagist.org/packages/picturae/oai-pmh)
 [![Build Status](https://travis-ci.org/picturae/OaiPmh.svg?branch=develop)](https://travis-ci.org/picturae/OaiPmh)
 [![Coverage Status](https://coveralls.io/repos/picturae/OaiPmh/badge.svg?service=github)](https://coveralls.io/github/picturae/OaiPmh)
-[![Total Downloads](https://img.shields.io/packagist/dt/league/picturae/oai-pmh.svg?style=flat-square)](https://packagist.org/packages/league/html-to-markdown)
+[![Total Downloads](https://img.shields.io/packagist/dt/picturae/oai-pmh.svg)](https://packagist.org/packages/picturae/oai-pmh)
 
 # Description
 
