@@ -1,7 +1,13 @@
 {
   "name": "picturae/oai-pmh",
   "description": "Picturae OAI-PMH package. Can be used to create a OAI endpoint",
-  "license": "proprietary",
+  "license": "GPLv3",
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "https://github.com/picturae/licenser.git"
+    }
+  ],
   "authors": [
     {
       "name": "Picturae",
@@ -20,7 +26,9 @@
   "require-dev": {
     "phpunit/phpunit": "^4.8",
     "zendframework/zend-diactoros": "^1.1",
-    "squizlabs/php_codesniffer": "^2.3"
+    "squizlabs/php_codesniffer": "^2.3",
+    "satooshi/php-coveralls": "^0.6.1",
+    "jameshalsall/licenser": "dev-master"
   },
   "scripts": {
     "post-install-cmd": [

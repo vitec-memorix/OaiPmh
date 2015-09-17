@@ -12,13 +12,12 @@ $filename_pattern = '/.*(.php)$/';
 $exit_status = 0;
 // Loop through files.
 foreach ($output as $file) {
-    if ( ! preg_match($filename_pattern, $file)) {
+    if (! preg_match($filename_pattern, $file)) {
         // don't check files that don't match the pattern
         continue;
     }
     // If file is removed from git do not sniff.
-    if ( ! file_exists($file))
-    {
+    if (! file_exists($file)) {
         continue;
     }
     $lint_output = [];
@@ -26,9 +25,24 @@ foreach ($output as $file) {
     exec("./vendor/bin/phpcs --standard=PSR2 --encoding=utf-8 " . escapeshellarg($file), $lint_output, $return_phpcs);
     // Run php lint
     exec("php -l " . escapeshellarg($file), $lint_output, $return_lint);
+
+    $licenser_output = [];
+    exec(
+        "./vendor/bin/licenser run " . escapeshellarg($file) . " contrib/licenseHeader.txt -c",
+        $licenser_output,
+        $return_licenser
+    );
+
+    if (!empty($licenser_output)) {
+        echo implode("\n", $licenser_output), "\n";
+        $exit_status = 1;
+    }
+
     if (($return_phpcs === 0) && ($return_lint === 0)) {
         continue;
     }
+
+
     echo implode("\n", $lint_output), "\n";
     $exit_status = 1;
 }
@@ -38,4 +52,5 @@ if ($return_phpunit !== 0) {
     echo implode("\n", $phpunit_output), "\n";
     $exit_status = 1;
 }
+
 exit($exit_status);

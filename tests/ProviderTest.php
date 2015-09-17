@@ -1,22 +1,34 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: jeroen
- * Date: 12/1/14
- * Time: 11:34 AM
+
+/*
+ * This file is part of Picturae\Oai-Pmh.
+ *
+ * Picturae\Oai-Pmh is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Picturae\Oai-Pmh is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Picturae\Oai-Pmh.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 
 namespace Test\Picturae\OaiPmh;
 
 use Picturae\OaiPmh\Exception\BadResumptionTokenException;
 use Picturae\OaiPmh\Exception\IdDoesNotExistException;
-use Picturae\OaiPmh\Interfaces\MetadataFormat;
-use Picturae\OaiPmh\Record;
-use Picturae\OaiPmh\Record\Header;
-use Picturae\OaiPmh\RecordList;
-use Picturae\OaiPmh\Repository\Identity;
-use Picturae\OaiPmh\Set;
-use Picturae\OaiPmh\SetList;
+use Picturae\OaiPmh\Implementation\MetadataFormatType;
+use Picturae\OaiPmh\Implementation\Record;
+use Picturae\OaiPmh\Implementation\Record\Header;
+use Picturae\OaiPmh\Implementation\RecordList;
+use Picturae\OaiPmh\Implementation\Repository\Identity;
+use Picturae\OaiPmh\Implementation\Set;
+use Picturae\OaiPmh\Implementation\SetList;
 use Psr\Http\Message\ResponseInterface;
 use Zend\Diactoros\ServerRequest;
 
@@ -427,12 +439,12 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
                 case "a":
                 case null:
                     return [
-                        new MetadataFormat(
+                        new MetadataFormatType(
                             "oai_dc",
                             'http://www.openarchives.org/OAI/2.0/oai_dc.xsd',
                             'http://www.openarchives.org/OAI/2.0/oai_dc/'
                         ),
-                        new MetadataFormat(
+                        new MetadataFormatType(
                             "olac",
                             'http://www.language-archives.org/OLAC/olac-0.2.xsd',
                             'http://www.language-archives.org/OLAC/0.2/'

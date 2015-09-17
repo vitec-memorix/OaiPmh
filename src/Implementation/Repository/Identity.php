@@ -1,12 +1,26 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: jsmit
- * Date: 28-11-14
- * Time: 15:55
+
+/*
+ * This file is part of Picturae\Oai-Pmh.
+ *
+ * Picturae\Oai-Pmh is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Picturae\Oai-Pmh is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Picturae\Oai-Pmh.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-namespace Picturae\OaiPmh\Repository;
+
+namespace Picturae\OaiPmh\Implementation\Repository;
+
+use Picturae\OaiPmh\Interfaces\Repository\Identity as IdentityInterface;
 
 /**
  * Class Identity
@@ -14,7 +28,7 @@ namespace Picturae\OaiPmh\Repository;
  *
  * @package Picturae\OaiPmh\Repository
  */
-class IdentityCallback implements \Picturae\OaiPmh\Interfaces\Repository\Identity
+class Identity implements IdentityInterface
 {
     /**
      * @var string
@@ -57,25 +71,24 @@ class IdentityCallback implements \Picturae\OaiPmh\Interfaces\Repository\Identit
     private $description;
 
     /**
-     * @param \Closure|string $repositoryName
-     * @param \Closure|string $baseUrl
-     * @param \Closure|\DateTime $earliestDatestamp
-     * @param \Closure|string $deletedRecord
-     * @param \Closure|array $adminEmails
-     * @param \Closure|string $granularity
-     * @param \Closure|string|null $compression
-     * @param \Closure|\DOMDocument|null $description
+     * @param string $repositoryName
+     * @param string $baseUrl
+     * @param \DateTime $earliestDatestamp
+     * @param string $deletedRecord
+     * @param array $adminEmails
+     * @param string $granularity
+     * @param string|null $compression
+     * @param \DOMDocument|null $description
      */
-
     public function __construct(
         $repositoryName,
         $baseUrl,
-        $earliestDatestamp,
+        \DateTime $earliestDatestamp,
         $deletedRecord,
-        $adminEmails,
+        array $adminEmails,
         $granularity,
         $compression = null,
-        $description = null
+        \DOMDocument $description = null
     ) {
         $this->repositoryName = $repositoryName;
         $this->baseUrl = $baseUrl;
@@ -86,14 +99,6 @@ class IdentityCallback implements \Picturae\OaiPmh\Interfaces\Repository\Identit
         $this->compression = $compression;
         $this->description = $description;
     }
-    
-    private function load(&$valueOrCallback)
-    {
-        if ($valueOrCallback instanceof \Closure) {
-            $valueOrCallback = $valueOrCallback();
-        }
-        return $valueOrCallback;
-    }
 
     /**
      * @return string
@@ -101,7 +106,7 @@ class IdentityCallback implements \Picturae\OaiPmh\Interfaces\Repository\Identit
      */
     public function getRepositoryName()
     {
-        return $this->load($this->repositoryName);
+        return $this->repositoryName;
     }
 
     /**
@@ -109,7 +114,7 @@ class IdentityCallback implements \Picturae\OaiPmh\Interfaces\Repository\Identit
      */
     public function getBaseUrl()
     {
-        return $this->load($this->baseUrl);
+        return $this->baseUrl;
     }
 
     /**
@@ -121,7 +126,7 @@ class IdentityCallback implements \Picturae\OaiPmh\Interfaces\Repository\Identit
      */
     public function getEarliestDatestamp()
     {
-        return $this->load($this->earliestDatestamp);
+        return $this->earliestDatestamp;
     }
 
     /**
@@ -134,7 +139,7 @@ class IdentityCallback implements \Picturae\OaiPmh\Interfaces\Repository\Identit
      */
     public function getDeletedRecord()
     {
-        return $this->load($this->deletedRecord);
+        return $this->deletedRecord;
     }
 
     /**
@@ -144,7 +149,7 @@ class IdentityCallback implements \Picturae\OaiPmh\Interfaces\Repository\Identit
      */
     public function getGranularity()
     {
-        return $this->load($this->granularity);
+        return $this->granularity;
     }
 
     /**
@@ -152,7 +157,7 @@ class IdentityCallback implements \Picturae\OaiPmh\Interfaces\Repository\Identit
      */
     public function getAdminEmails()
     {
-        return $this->load($this->adminEmails);
+        return $this->adminEmails;
     }
 
     /**
@@ -162,7 +167,7 @@ class IdentityCallback implements \Picturae\OaiPmh\Interfaces\Repository\Identit
      */
     public function getCompression()
     {
-        return $this->load($this->compression);
+        return $this->compression;
     }
 
     /**
@@ -174,6 +179,6 @@ class IdentityCallback implements \Picturae\OaiPmh\Interfaces\Repository\Identit
      */
     public function getDescription()
     {
-        return $this->load($this->description);
+        return $this->description;
     }
 }
