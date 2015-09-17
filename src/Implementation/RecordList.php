@@ -6,8 +6,9 @@
  * Time: 4:11 PM
  */
 
-namespace Picturae\OaiPmh;
+namespace Picturae\OaiPmh\Implementation;
 
+use Picturae\OaiPmh\Interfaces\Record as RecordInterface;
 use Picturae\OaiPmh\Interfaces\RecordList as RecordListInterface;
 
 /**
@@ -48,7 +49,7 @@ class RecordList implements RecordListInterface
     }
 
     /**
-     * @return Record[]
+     * @return RecordInterface[]
      */
     public function getItems()
     {

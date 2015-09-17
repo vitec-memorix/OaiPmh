@@ -6,7 +6,7 @@
  * Time: 4:11 PM
  */
 
-namespace Picturae\OaiPmh\Record;
+namespace Picturae\OaiPmh\Implementation\Record;
 
 use Picturae\OaiPmh\Interfaces\Record\Header as HeaderInterface;
 

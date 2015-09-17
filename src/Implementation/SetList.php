@@ -6,7 +6,7 @@
  * Time: 4:11 PM
  */
 
-namespace Picturae\OaiPmh;
+namespace Picturae\OaiPmh\Implementation;
 
 use Picturae\OaiPmh\Interfaces\Set as SetInterface;
 
@@ -24,12 +24,12 @@ class SetList implements \Picturae\OaiPmh\Interfaces\SetList
     private $resumptionToken;
 
     /**
-     * @var SetInterface[]
+     * @var Set[]
      */
     private $items;
 
     /**
-     * @param SetInterface[] $items
+     * @param Set[] $items
      * @param null|string $resumptionToken
      */
     public function __construct($items, $resumptionToken = null)
@@ -48,7 +48,7 @@ class SetList implements \Picturae\OaiPmh\Interfaces\SetList
     }
 
     /**
-     * @return Set[]
+     * @return SetInterface[]
      */
     public function getItems()
     {

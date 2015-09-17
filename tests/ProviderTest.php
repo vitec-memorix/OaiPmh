@@ -10,13 +10,13 @@ namespace Test\Picturae\OaiPmh;
 
 use Picturae\OaiPmh\Exception\BadResumptionTokenException;
 use Picturae\OaiPmh\Exception\IdDoesNotExistException;
-use Picturae\OaiPmh\Interfaces\MetadataFormat;
-use Picturae\OaiPmh\Record;
-use Picturae\OaiPmh\Record\Header;
-use Picturae\OaiPmh\RecordList;
-use Picturae\OaiPmh\Repository\Identity;
-use Picturae\OaiPmh\Set;
-use Picturae\OaiPmh\SetList;
+use Picturae\OaiPmh\Implementation\MetadataFormatType;
+use Picturae\OaiPmh\Implementation\Record;
+use Picturae\OaiPmh\Implementation\Record\Header;
+use Picturae\OaiPmh\Implementation\RecordList;
+use Picturae\OaiPmh\Implementation\Repository\Identity;
+use Picturae\OaiPmh\Implementation\Set;
+use Picturae\OaiPmh\Implementation\SetList;
 use Psr\Http\Message\ResponseInterface;
 use Zend\Diactoros\ServerRequest;
 
@@ -427,12 +427,12 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
                 case "a":
                 case null:
                     return [
-                        new MetadataFormat(
+                        new MetadataFormatType(
                             "oai_dc",
                             'http://www.openarchives.org/OAI/2.0/oai_dc.xsd',
                             'http://www.openarchives.org/OAI/2.0/oai_dc/'
                         ),
-                        new MetadataFormat(
+                        new MetadataFormatType(
                             "olac",
                             'http://www.language-archives.org/OLAC/olac-0.2.xsd',
                             'http://www.language-archives.org/OLAC/0.2/'

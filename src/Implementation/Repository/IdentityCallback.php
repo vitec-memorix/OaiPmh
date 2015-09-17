@@ -6,7 +6,9 @@
  * Time: 15:55
  */
 
-namespace Picturae\OaiPmh\Repository;
+namespace Picturae\OaiPmh\Implementation\Repository;
+
+use Picturae\OaiPmh\Interfaces\Repository\Identity as IdentityInterface;
 
 /**
  * Class Identity
@@ -14,7 +16,7 @@ namespace Picturae\OaiPmh\Repository;
  *
  * @package Picturae\OaiPmh\Repository
  */
-class IdentityCallback implements \Picturae\OaiPmh\Interfaces\Repository\Identity
+class IdentityCallback implements IdentityInterface
 {
     /**
      * @var string

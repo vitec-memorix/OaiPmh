@@ -6,9 +6,11 @@
  * Time: 3:07 PM
  */
 
-namespace Picturae\OaiPmh\Interfaces;
+namespace Picturae\OaiPmh\Implementation;
 
-class MetadataFormat implements MetadataFormatType
+use Picturae\OaiPmh\Interfaces\MetadataFormatType as MetadataFormatTypeInterface;
+
+class MetadataFormatType implements MetadataFormatTypeInterface
 {
     /**
      * @var string

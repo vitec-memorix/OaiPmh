@@ -6,7 +6,7 @@
  * Time: 4:11 PM
  */
 
-namespace Picturae\OaiPmh;
+namespace Picturae\OaiPmh\Implementation;
 
 use Picturae\OaiPmh\Interfaces\Set as SetInterface;
 
