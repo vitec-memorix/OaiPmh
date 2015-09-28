@@ -140,7 +140,7 @@ class ResponseDocument
             $node = $this->document->importNode($value->documentElement, true);
             $element->appendChild($node);
         } else {
-            $element = $this->document->createElementNS($nameSpace, $name, $value);
+            $element = $this->document->createElementNS($nameSpace, $name, htmlspecialchars($value, ENT_XML1));
         }
         return $element;
     }
