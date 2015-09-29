@@ -501,7 +501,7 @@ class Provider
             $parsedDate = date_create_from_format('Y-m-d\TH:i:s\Z', $date, $timezone);
             $granularity = Identity::GRANULARITY_YYYY_MM_DDTHH_MM_SSZ;
         } elseif (preg_match('#^\d{4}-\d{2}-\d{2}$#', $date)) {
-            $parsedDate = date_create_from_format('Y-m-d\TH:i:s\Z', $date, $timezone);
+            $parsedDate = date_create_from_format('Y-m-d', $date, $timezone);
             $granularity = Identity::GRANULARITY_YYYY_MM_DD;
         } else {
             throw new BadArgumentException("Expected a data in one of the following formats: " .
