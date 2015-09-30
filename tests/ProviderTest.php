@@ -43,7 +43,7 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
     public function testNoVerb()
     {
         $repo = $this->getProvider();
-        $response = $repo->execute();
+        $response = $repo->getResponse();
 
         $this->assertValidResponse($response);
         $this->assertXPathExists($response, "/oai:OAI-PMH/oai:error[@code='badVerb']");
@@ -53,7 +53,7 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
     {
         $repo = $this->getProvider();
         $repo->setRequest((new ServerRequest())->withQueryParams(['verb' => 'badverb']));
-        $response = $repo->execute();
+        $response = $repo->getResponse();
 
         $this->assertValidResponse($response);
         $this->assertXPathExists($response, "/oai:OAI-PMH/oai:error[@code='badVerb']");
@@ -63,7 +63,7 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
     {
         $repo = $this->getProvider();
         $repo->setRequest((new ServerRequest())->withQueryParams(['verb' => 'badverb']));
-        $response = $repo->execute();
+        $response = $repo->getResponse();
 
         $this->assertValidResponse($response);
         $this->assertXPathExists($response, "/oai:OAI-PMH/oai:error[@code='badVerb']");
@@ -77,7 +77,7 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
             'nonExistingArg' => '1',
             'nonExistingArg2' => '1'
         ]));
-        $response = $repo->execute();
+        $response = $repo->getResponse();
 
         $this->assertValidResponse($response);
         $this->assertXPathExists($response, "/oai:OAI-PMH/oai:error[@code='badArgument'][1]");
@@ -160,7 +160,7 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
     {
         $repo = $this->getProvider();
         $repo->setRequest((new ServerRequest())->withQueryParams(['verb' => 'Identify']));
-        $response = $repo->execute();
+        $response = $repo->getResponse();
 
         $this->assertXPathExists($response, "/oai:OAI-PMH/oai:Identify");
         $this->assertValidResponse($response);
@@ -171,7 +171,7 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
     {
         $repo = $this->getProvider();
         $repo->setRequest((new ServerRequest())->withParsedBody(['verb' => 'Identify'])->withMethod('POST'));
-        $response = $repo->execute();
+        $response = $repo->getResponse();
 
         $this->assertXPathExists($response, "/oai:OAI-PMH/oai:Identify");
         $this->assertValidResponse($response);
@@ -181,7 +181,7 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
     {
         $repo = $this->getProvider();
         $repo->setRequest((new ServerRequest())->withQueryParams(['verb' => 'ListMetadataFormats']));
-        $response = $repo->execute();
+        $response = $repo->getResponse();
 
 
         $this->assertXPathExists($response, "/oai:OAI-PMH/oai:ListMetadataFormats");
@@ -195,7 +195,7 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
             'verb' => 'ListMetadataFormats',
             'identifier' => 'a'
         ]));
-        $response = $repo->execute();
+        $response = $repo->getResponse();
 
         $this->assertValidResponse($response);
 
@@ -204,7 +204,7 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
             'verb' => 'ListMetadataFormats',
             'identifier' => 'b'
         ]));
-        $response = $repo->execute();
+        $response = $repo->getResponse();
 
         $this->assertXPathExists($response, "/oai:OAI-PMH/oai:error[@code='noMetadataFormats']");
         $this->assertValidResponse($response);
@@ -214,7 +214,7 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
             'verb' => 'ListMetadataFormats',
             'identifier' => 'c'
         ]));
-        $response = $repo->execute();
+        $response = $repo->getResponse();
         $this->assertXPathExists($response, "/oai:OAI-PMH/oai:error[@code='idDoesNotExist']");
 
         $this->assertValidResponse($response);
@@ -224,7 +224,7 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
     {
         $repo = $this->getProvider();
         $repo->setRequest((new ServerRequest())->withQueryParams(['verb' => 'ListSets']));
-        $response = $repo->execute();
+        $response = $repo->getResponse();
 
         $this->assertValidResponse($response);
 
@@ -232,20 +232,20 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
         $repo->setRequest((new ServerRequest())->withQueryParams(['verb' => 'ListSets', 'resumptionToken' => 'a']));
         $this->assertXPathExists($response, "/oai:OAI-PMH/oai:ListSets/oai:set");
         $this->assertXPathExists($response, "/oai:OAI-PMH/oai:ListSets/oai:resumptionToken");
-        $response = $repo->execute();
+        $response = $repo->getResponse();
 
         $this->assertValidResponse($response);
 
         $repo = $this->getProvider();
         $repo->setRequest((new ServerRequest())->withQueryParams(['verb' => 'ListSets', 'resumptionToken' => 'b']));
-        $response = $repo->execute();
+        $response = $repo->getResponse();
 
         $this->assertValidResponse($response);
         $this->assertXPathNotExists($response, "/oai:OAI-PMH/oai:ListSets/oai:resumptionToken");
 
         $repo = $this->getProvider();
         $repo->setRequest((new ServerRequest())->withQueryParams(['verb' => 'ListSets', 'resumptionToken' => 'c']));
-        $response = $repo->execute();
+        $response = $repo->getResponse();
 
         $this->assertValidResponse($response);
         $this->assertXPathExists($response, "/oai:OAI-PMH/oai:error[@code='badResumptionToken']");
@@ -256,7 +256,7 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
         //bad date in Y-m-d format
         $repo = $this->getProvider();
         $repo->setRequest((new ServerRequest())->withQueryParams(['verb' => 'ListRecords', 'from' => '2345-44-56']));
-        $response = $repo->execute();
+        $response = $repo->getResponse();
 
         $this->assertValidResponse($response);
         $this->assertXPathExists($response, "/oai:OAI-PMH/oai:error[@code='badArgument']");
@@ -267,7 +267,7 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
             'verb' => 'ListRecords',
             'from' => '2345-01-01T12:12+00'
         ]));
-        $response = $repo->execute();
+        $response = $repo->getResponse();
 
         $this->assertValidResponse($response);
         $this->assertXPathExists($response, "/oai:OAI-PMH/oai:error[@code='badArgument']");
@@ -279,7 +279,7 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
             'from' => '2345-31-12T12:12:00Z',
             'metadataPrefix' => 'oai_pmh'
         ]));
-        $response = $repo->execute();
+        $response = $repo->getResponse();
 
         $this->assertXPathExists($response, "/oai:OAI-PMH/oai:error[@code='badArgument']");
 
@@ -290,7 +290,7 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
             'from' => '2345-01-01T12:12:00Z',
             'metadataPrefix' => 'oai_pmh'
         ]));
-        $response = $repo->execute();
+        $response = $repo->getResponse();
 
         $this->assertXPathNotExists($response, "/oai:OAI-PMH/oai:error");
 
@@ -301,7 +301,7 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
             'from' => '2345-31-12',
             'metadataPrefix' => 'oai_pmh'
         ]));
-        $response = $repo->execute();
+        $response = $repo->getResponse();
 
         $this->assertXPathExists($response, "/oai:OAI-PMH/oai:error[@code='badArgument']");
         $this->assertValidResponse($response);
@@ -315,7 +315,7 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
             'verb' => 'GetRecord',
             'metadataPrefix' => 'oai_dc'
         ]));
-        $response = $repo->execute();
+        $response = $repo->getResponse();
 
         $this->assertValidResponse($response);
         $this->assertXPathExists($response, "/oai:OAI-PMH/oai:error[@code='badArgument']");
@@ -323,7 +323,7 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
         //no metadataPrefix
         $repo = $this->getProvider();
         $repo->setRequest((new ServerRequest())->withQueryParams(['verb' => 'GetRecord', 'identifier' => 'a']));
-        $response = $repo->execute();
+        $response = $repo->getResponse();
 
         $this->assertValidResponse($response);
         $this->assertXPathExists($response, "/oai:OAI-PMH/oai:error[@code='badArgument']");
@@ -335,7 +335,7 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
             'metadataPrefix' => 'oai_dc',
             'identifier' => 'a'
         ]));
-        $response = $repo->execute();
+        $response = $repo->getResponse();
 
         $this->assertValidResponse($response);
         $this->assertXPathNotExists($response, "/oai:OAI-PMH/oai:error[@code='badArgument']");
@@ -347,7 +347,7 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
             'metadataPrefix' => 'oai_dc',
             'identifier' => 'b'
         ]));
-        $response = $repo->execute();
+        $response = $repo->getResponse();
 
         $this->assertValidResponse($response);
         $this->assertXPathNotExists($response, "/oai:OAI-PMH/oai:error[@code='IdDoesNotExistException']");
@@ -360,7 +360,7 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
             'verb' => 'ListIdentifiers',
             'from' => '2345-44-56'
         ]));
-        $response = $repo->execute();
+        $response = $repo->getResponse();
 
         $this->assertValidResponse($response);
         $this->assertXPathExists($response, "/oai:OAI-PMH/oai:error[@code='badArgument']");
@@ -370,7 +370,7 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
             'verb' => 'ListIdentifiers',
             'from' => '2345-31-12'
         ]));
-        $response = $repo->execute();
+        $response = $repo->getResponse();
 
         $this->assertValidResponse($response);
         $this->assertXPathExists($response, "/oai:OAI-PMH/oai:error[@code='badArgument']");
@@ -381,7 +381,7 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
             'verb' => 'ListIdentifiers',
             'from' => '2345-01-01T12:12:00+00'
         ]));
-        $response = $repo->execute();
+        $response = $repo->getResponse();
 
         $this->assertValidResponse($response);
         $this->assertXPathExists($response, "/oai:OAI-PMH/oai:error[@code='badArgument']");
@@ -392,7 +392,7 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
             'verb' => 'ListIdentifiers',
             'from' => '2345-01-01T12:12:00Z'
         ]));
-        $response = $repo->execute();
+        $response = $repo->getResponse();
 
         $this->assertValidResponse($response);
         $this->assertXPathNotExists($response, "/oai:OAI-PMH/oai:error");
