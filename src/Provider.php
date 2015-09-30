@@ -47,7 +47,7 @@ use Psr\Http\Message\ResponseInterface;
  * $provider->setRequest($get);
  *
  * //run the oai provider this will return a object containing all headers and output
- * $response = $provider->execute();
+ * $response = $provider->getResponse();
  *
  * //output headers, body and then exit (it is possible to do manipulations before outputting but this is not advised.
  * $response->outputAndExit();
@@ -96,10 +96,15 @@ class Provider
 
     /**
      * @param Repository $repository
+     * @param ServerRequestInterface $request
      */
-    public function __construct(Repository $repository)
+    public function __construct(Repository $repository, ServerRequestInterface $request = null)
     {
         $this->repository = $repository;
+        
+        if ($request) {
+            $this->setRequest($request);
+        }
     }
 
     /**
@@ -138,7 +143,7 @@ class Provider
      * handles the current request
      * @return ResponseInterface
      */
-    public function execute()
+    public function getResponse()
     {
         $this->response = new ResponseDocument();
         $this->response->addElement("responseDate", $this->toUtcDateTime(new \DateTime()));
@@ -501,7 +506,7 @@ class Provider
             $parsedDate = date_create_from_format('Y-m-d\TH:i:s\Z', $date, $timezone);
             $granularity = Identity::GRANULARITY_YYYY_MM_DDTHH_MM_SSZ;
         } elseif (preg_match('#^\d{4}-\d{2}-\d{2}$#', $date)) {
-            $parsedDate = date_create_from_format('Y-m-d\TH:i:s\Z', $date, $timezone);
+            $parsedDate = date_create_from_format('Y-m-d', $date, $timezone);
             $granularity = Identity::GRANULARITY_YYYY_MM_DD;
         } else {
             throw new BadArgumentException("Expected a data in one of the following formats: " .
