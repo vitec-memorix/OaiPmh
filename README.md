@@ -245,3 +245,11 @@ $response = $provider->getResponse();
 // Send PSR 7 Response
 (new Zend\Diactoros\Response\SapiEmitter())->emit($response);
 ```
+## Validators
+
+Values for setSpec must be validated yourself before adding them to the header
+
+```php
+$header = new \Picturae\OaiPmh\Validator\SetSpecValidator();
+$boolean = $header->isValid($value);
+````
