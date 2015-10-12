@@ -225,6 +225,15 @@ class Repository implements InterfaceRepository
 
 # Sending a response
 
+To create a request and send a response you will need something that can create a PSR 7 server request
+and emit a PSR 7 response
+
+In this example we use zend-diactoros
+
+```
+composer require zendframework/zend-diactoros
+```
+
 ```php
 // Where $repository is an instance of \Picturae\OaiPmh\Interfaces\Repository
 $repository = new \Your\Implementation\Repository();
@@ -236,3 +245,11 @@ $response = $provider->getResponse();
 // Send PSR 7 Response
 (new Zend\Diactoros\Response\SapiEmitter())->emit($response);
 ```
+## Validators
+
+Values for setSpec must be validated yourself before adding them to the header
+
+```php
+$header = new \Picturae\OaiPmh\Validator\SetSpecValidator();
+$boolean = $header->isValid($value);
+````
