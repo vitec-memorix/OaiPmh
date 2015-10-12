@@ -51,6 +51,9 @@ class Header implements HeaderInterface
     private $deleted;
 
     /**
+     * Spec values must validate to regex ([A-Za-z0-9\-_\.!~\*'\(\)])+(:[A-Za-z0-9\-_\.!~\*'\(\)]+)*
+     * check values with the SetSpecValidator
+     *
      * @param string $identifier
      * @param \DateTime $datestamp
      * @param array $setSpecs
