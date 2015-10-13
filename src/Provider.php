@@ -422,7 +422,7 @@ class Provider
      */
     private function listIdentifiers()
     {
-        $listNode = $this->response->createElement('ListRecords');
+        $listNode = $this->response->createElement('ListIdentifiers');
         if (isset($this->params['resumptionToken'])) {
             $records = $this->repository->listRecordsByToken($this->params['resumptionToken']);
         } else {
@@ -440,9 +440,7 @@ class Provider
 
         // create 'record' with only headers
         foreach ($records->getItems() as $record) {
-            $recordNode = $this->response->createElement('record');
-            $recordNode->appendChild($this->getRecordHeaderNode($record));
-            $listNode->appendChild($recordNode);
+            $listNode->appendChild($this->getRecordHeaderNode($record));
         }
 
         $this->addResumptionToken($records, $listNode);
