@@ -397,6 +397,43 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
         $this->assertValidResponse($response);
         $this->assertXPathNotExists($response, "/oai:OAI-PMH/oai:error");
     }
+    
+    public function testDeletedRecords()
+    {
+        $requests = [
+            // In list records
+            (new ServerRequest())->withQueryParams([
+                'verb' => 'ListRecords',
+                'metadataPrefix' => 'oai_dc',
+                'set' => 'deleted:set',
+            ]),
+            
+            // In list identifiers
+            (new ServerRequest())->withQueryParams([
+                'verb' => 'ListIdentifiers',
+                'set' => 'deleted:set',
+            ]),
+            
+            // In get record
+            (new ServerRequest())->withQueryParams([
+                'verb' => 'GetRecord',
+                'identifier' => 'deleted',
+                'metadataPrefix' => 'oai_dc',
+            ]),
+        ];
+        
+        foreach ($requests as $request) {
+            $repo = $this->getProvider();
+            $repo->setRequest($request);
+            $response = $repo->getResponse();
+            
+            $this->assertValidResponse($response);
+            $this->assertXPathNotExists($response, "/oai:OAI-PMH/oai:error");
+            $this->assertXPathExists($response, "//oai:header[@status='deleted']");
+            $this->assertXPathNotExists($response, "//oai:metadata");
+            $this->assertXPathNotExists($response, "//oai:about");
+        }
+    }
 
     /**
      * @return \PHPUnit_Framework_MockObject_MockObject
@@ -521,22 +558,66 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
         );
 
         $someRecord = new Record(new Header("id1", new \DateTime()), $recordMetadata);
-        $recordList = new RecordList(
-            [
-                $someRecord,
-            ],
-            'resumptionToken'
+        
+        $deletedRecordMetadata = new \DOMDocument();
+        $deletedRecordMetadata->loadXML(
+            '
+            <oai_dc:dc
+                 xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/"
+                 xmlns:dc="http://purl.org/dc/elements/1.1/"
+                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                 xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/
+                 http://www.openarchives.org/OAI/2.0/oai_dc.xsd">
+                <dc:title>Deleted record</dc:title>
+                <dc:description>A testing deleted record</dc:description>
+                <dc:date>2001-01-01</dc:date>
+            </oai_dc:dc>'
         );
 
+        $deletedRecord = new Record(
+            new Header("deleted", new \DateTime(), [], true),
+            $deletedRecordMetadata
+        );
+        
+        $listRecords = function (
+            $metadataFormat = null,
+            $from = null,
+            $until = null,
+            $set = null
+        ) use (
+            $someRecord,
+            $deletedRecord
+        ) {
+            switch ($set) {
+                case 'deleted:set':
+                    return new RecordList(
+                        [
+                            $deletedRecord,
+                        ],
+                        'resumptionToken'
+                    );
+                default:
+                    return new RecordList(
+                        [
+                            $someRecord,
+                            $deletedRecord,
+                        ],
+                        'resumptionToken'
+                    );
+            }
+        };
+
         $mock->expects($this->any())->method('listRecords')->will(
-            $this->returnValue($recordList)
+            $this->returnCallback($listRecords)
         )->with();
 
 
-        $getRecords = function ($identifier = null) use ($someRecord) {
+        $getRecords = function ($metadataFormat = null, $identifier = null) use ($someRecord, $deletedRecord) {
             switch ($identifier) {
                 case "a":
                     return $someRecord;
+                case "deleted":
+                    return $deletedRecord;
                 default:
                     throw new IdDoesNotExistException();
             }
