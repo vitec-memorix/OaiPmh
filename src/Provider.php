@@ -29,6 +29,7 @@ use Picturae\OaiPmh\Exception\NoSetHierarchyException;
 use Picturae\OaiPmh\Interfaces\RecordList as RecordListInterface;
 use Picturae\OaiPmh\Interfaces\Repository;
 use Picturae\OaiPmh\Interfaces\Repository\Identity;
+use Picturae\OaiPmh\Interfaces\Record\Header;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
@@ -229,13 +230,19 @@ class Provider
 
         $record = $this->repository->getRecord($this->params['metadataPrefix'], $this->params['identifier']);
         $recordNode = $this->response->createElement('record');
-        $recordNode->appendChild($this->getRecordHeaderNode($record));
-        $recordNode->appendChild($this->response->createElement('metadata', $record->getMetadata()));
+        
+        $header = $record->getHeader();
+        $recordNode->appendChild($this->getRecordHeaderNode($header));
+        
+        // Only add metadata and about if the record is not deleted.
+        if (!$header->isDeleted()) {
+            $recordNode->appendChild($this->response->createElement('metadata', $record->getMetadata()));
 
-        //only add an 'about' node if it's not null
-        $about = $record->getAbout();
-        if ($about !== null) {
-            $recordNode->appendChild($this->response->createElement('about', $about));
+            //only add an 'about' node if it's not null
+            $about = $record->getAbout();
+            if ($about !== null) {
+                $recordNode->appendChild($this->response->createElement('about', $about));
+            }
         }
 
         $getRecordNode = $this->response->createElement('GetRecord');
@@ -399,13 +406,19 @@ class Provider
         //create 'record' node for each record with a 'header', 'metadata' and possibly 'about' node
         foreach ($records->getItems() as $record) {
             $recordNode = $this->response->createElement('record');
-            $recordNode->appendChild($this->getRecordHeaderNode($record));
-            $recordNode->appendChild($this->response->createElement('metadata', $record->getMetadata()));
+            
+            $header = $record->getHeader();
+            $recordNode->appendChild($this->getRecordHeaderNode($header));
+            
+            // Only add metadata and about if the record is not deleted.
+            if (!$header->isDeleted()) {
+                $recordNode->appendChild($this->response->createElement('metadata', $record->getMetadata()));
 
-            //only add an 'about' node if it's not null
-            $about = $record->getAbout();
-            if ($about !== null) {
-                $recordNode->appendChild($this->response->createElement('about', $about));
+                //only add an 'about' node if it's not null
+                $about = $record->getAbout();
+                if ($about !== null) {
+                    $recordNode->appendChild($this->response->createElement('about', $about));
+                }
             }
 
             $listNode->appendChild($recordNode);
@@ -440,7 +453,7 @@ class Provider
 
         // create 'record' with only headers
         foreach ($records->getItems() as $record) {
-            $listNode->appendChild($this->getRecordHeaderNode($record));
+            $listNode->appendChild($this->getRecordHeaderNode($record->getHeader()));
         }
 
         $this->addResumptionToken($records, $listNode);
@@ -450,13 +463,12 @@ class Provider
 
     /**
      * Converts the header of a record to a header node, used for both ListRecords and ListIdentifiers
-     * @param Interfaces\Record $record
+     * @param Header $header
      * @return \DOMElement
      */
-    private function getRecordHeaderNode(Interfaces\Record $record)
+    private function getRecordHeaderNode(Header $header)
     {
         $headerNode = $this->response->createElement('header');
-        $header = $record->getHeader();
         $headerNode->appendChild($this->response->createElement('identifier', $header->getIdentifier()));
         $headerNode->appendChild(
             $this->response->createElement('datestamp', $this->toUtcDateTime($header->getDatestamp()))
