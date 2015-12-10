@@ -304,6 +304,15 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
         $response = $repo->getResponse();
 
         $this->assertXPathNotExists($response, "/oai:OAI-PMH/oai:error");
+        $this->assertXPathExists($response, "/oai:OAI-PMH/oai:ListRecords/oai:resumptionToken");
+        $this->assertXPathExists(
+            $response,
+            "/oai:OAI-PMH/oai:ListRecords/oai:resumptionToken[@cursor=\"0\"]"
+        );
+        $this->assertXPathExists(
+            $response,
+            "/oai:OAI-PMH/oai:ListRecords/oai:resumptionToken[@completeListSize=\"100\"]"
+        );
 
         //do a request with an invalid date
         $repo = $this->getProvider();
@@ -448,6 +457,15 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
 
         $this->assertValidResponse($response);
         $this->assertXPathNotExists($response, "/oai:OAI-PMH/oai:error");
+        $this->assertXPathExists($response, "/oai:OAI-PMH/oai:ListIdentifiers/oai:resumptionToken");
+        $this->assertXPathExists(
+            $response,
+            "/oai:OAI-PMH/oai:ListIdentifiers/oai:resumptionToken[@cursor=\"0\"]"
+        );
+        $this->assertXPathExists(
+            $response,
+            "/oai:OAI-PMH/oai:ListIdentifiers/oai:resumptionToken[@completeListSize=\"100\"]"
+        );
     }
     
     public function testDeletedRecords()
@@ -648,7 +666,9 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
                         [
                             $deletedRecord,
                         ],
-                        'resumptionToken'
+                        'resumptionToken',
+                        100,
+                        0
                     );
                 default:
                     return new RecordList(
@@ -656,7 +676,9 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
                             $someRecord,
                             $deletedRecord,
                         ],
-                        'resumptionToken'
+                        'resumptionToken',
+                        100,
+                        0
                     );
             }
         };
