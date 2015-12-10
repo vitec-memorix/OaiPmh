@@ -26,6 +26,7 @@ use Picturae\OaiPmh\Exception\MultipleExceptions;
 use Picturae\OaiPmh\Exception\NoMetadataFormatsException;
 use Picturae\OaiPmh\Exception\NoRecordsMatchException;
 use Picturae\OaiPmh\Exception\NoSetHierarchyException;
+use Picturae\OaiPmh\Exception\CannotDisseminateFormatException;
 use Picturae\OaiPmh\Interfaces\RecordList as RecordListInterface;
 use Picturae\OaiPmh\Interfaces\Repository;
 use Picturae\OaiPmh\Interfaces\Repository\Identity;
@@ -215,15 +216,18 @@ class Provider
     {
         $checks = [
             function () {
-                if (!isset($this->params['metadataPrefix'])) {
-                    throw new BadArgumentException("Missing required argument metadataPrefix");
-                }
-
-            },
-            function () {
                 if (!isset($this->params['identifier'])) {
                     throw new BadArgumentException("Missing required argument identifier");
                 }
+            },
+            function () {
+                if (!isset($this->params['metadataPrefix'])) {
+                    throw new BadArgumentException("Missing required argument metadataPrefix");
+                }
+                $this->checkMetadataPrefix(
+                    $this->params['metadataPrefix'],
+                    isset($this->params['identifier']) ? $this->params['identifier'] : null
+                );
             }
         ];
         $this->doChecks($checks);
@@ -389,10 +393,8 @@ class Provider
         if (isset($this->params['resumptionToken'])) {
             $records = $this->repository->listRecordsByToken($this->params['resumptionToken']);
         } else {
-            list($from, $until, $set) = $this->getRecordListParams();
-
-            $metadataFormat = $this->params['metadataPrefix'];
-            $records = $this->repository->listRecords($metadataFormat, $from, $until, $set);
+            list($metadataPrefix, $from, $until, $set) = $this->getRecordListParams();
+            $records = $this->repository->listRecords($metadataPrefix, $from, $until, $set);
 
             if (!count($records->getItems())) {
                 //maybe this is because someone tries to fetch from a set and we don't support that
@@ -439,8 +441,8 @@ class Provider
         if (isset($this->params['resumptionToken'])) {
             $records = $this->repository->listRecordsByToken($this->params['resumptionToken']);
         } else {
-            list($from, $until, $set) = $this->getRecordListParams(false);
-            $records = $this->repository->listRecords(null, $from, $until, $set);
+            list($metadataPrefix, $from, $until, $set) = $this->getRecordListParams();
+            $records = $this->repository->listRecords($metadataPrefix, $from, $until, $set);
 
             if (!count($records->getItems())) {
                 //maybe this is because someone tries to fetch from a set and we don't support that
@@ -546,12 +548,12 @@ class Provider
     }
 
     /**
-     * parses request arguments used by both ListIdentifiers and ListRecrods
-     * @param bool $checkMetadataPrefix
+     * Parses request arguments used by both ListIdentifiers and ListRecrods
      * @return array
      */
-    private function getRecordListParams($checkMetadataPrefix = true)
+    private function getRecordListParams()
     {
+        $metadataPrefix = null;
         $from = null;
         $until = null;
         $fromGranularity = null;
@@ -598,17 +600,45 @@ class Provider
                         'The granularity of the `until` argument is not supported by this repository'
                     );
                 }
-            }
-        ];
-        if ($checkMetadataPrefix === true) {
-            $checks[] = function () {
+            },
+            function () use ($metadataPrefix) {
                 if (!isset($this->params['metadataPrefix'])) {
                     throw new BadArgumentException("Missing required argument metadataPrefix");
                 }
-            };
-        }
-
+                $metadataPrefix = $this->params['metadataPrefix'];
+                $this->checkMetadataPrefix($metadataPrefix);
+            }
+        ];
+        
         $this->doChecks($checks);
-        return array($from, $until, $set);
+        return array($metadataPrefix, $from, $until, $set);
+    }
+    
+    /**
+     * Checks if the metadata prefix is in the available metadata formats list.
+     * @param string $metadataPrefix
+     * @param string $identifier , optional argument that specifies the unique identifier of an item
+     * @throws CannotDisseminateFormatException
+     */
+    private function checkMetadataPrefix($metadataPrefix, $identifier = null)
+    {
+        $availableMetadataFormats = $this->repository->listMetadataFormats($identifier);
+        
+        $found = false;
+        if (!empty($availableMetadataFormats)) {
+            foreach ($availableMetadataFormats as $metadataFormat) {
+                if ($metadataPrefix == $metadataFormat->getPrefix()) {
+                    $found = true;
+                    break;
+                }
+            }
+        }
+        
+        if (!$found) {
+            throw new CannotDisseminateFormatException(
+                'The metadata format identified by the value given for the metadataPrefix argument '
+                . 'is not supported by the item or by the repository.'
+            );
+        }
     }
 }

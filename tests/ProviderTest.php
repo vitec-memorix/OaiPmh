@@ -271,13 +271,24 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
 
         $this->assertValidResponse($response);
         $this->assertXPathExists($response, "/oai:OAI-PMH/oai:error[@code='badArgument']");
+        
+        //metadata prefix wrong
+        $repo = $this->getProvider();
+        $repo->setRequest((new ServerRequest())->withQueryParams([
+            'verb' => 'ListRecords',
+            'metadataPrefix' => 'oai_custom',
+        ]));
+        $response = $repo->getResponse();
+
+        $this->assertValidResponse($response);
+        $this->assertXPathExists($response, "/oai:OAI-PMH/oai:error[@code='cannotDisseminateFormat']");
 
         //bad date
         $repo = $this->getProvider();
         $repo->setRequest((new ServerRequest())->withQueryParams([
             'verb' => 'ListRecords',
             'from' => '2345-31-12T12:12:00Z',
-            'metadataPrefix' => 'oai_pmh'
+            'metadataPrefix' => 'oai_dc'
         ]));
         $response = $repo->getResponse();
 
@@ -288,7 +299,7 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
         $repo->setRequest((new ServerRequest())->withQueryParams([
             'verb' => 'ListRecords',
             'from' => '2345-01-01T12:12:00Z',
-            'metadataPrefix' => 'oai_pmh'
+            'metadataPrefix' => 'oai_dc'
         ]));
         $response = $repo->getResponse();
 
@@ -299,7 +310,7 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
         $repo->setRequest((new ServerRequest())->withQueryParams([
             'verb' => 'ListRecords',
             'from' => '2345-31-12',
-            'metadataPrefix' => 'oai_pmh'
+            'metadataPrefix' => 'oai_dc'
         ]));
         $response = $repo->getResponse();
 
@@ -328,6 +339,18 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
         $this->assertValidResponse($response);
         $this->assertXPathExists($response, "/oai:OAI-PMH/oai:error[@code='badArgument']");
 
+        //metadata prefix wrong
+        $repo = $this->getProvider();
+        $repo->setRequest((new ServerRequest())->withQueryParams([
+            'verb' => 'GetRecord',
+            'identifier' => 'a',
+            'metadataPrefix' => 'oai_custom',
+        ]));
+        $response = $repo->getResponse();
+
+        $this->assertValidResponse($response);
+        $this->assertXPathExists($response, "/oai:OAI-PMH/oai:error[@code='cannotDisseminateFormat']");
+        
         //valid request
         $repo = $this->getProvider();
         $repo->setRequest((new ServerRequest())->withQueryParams([
@@ -359,9 +382,31 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
 
     public function testListIdentifiers()
     {
+        //metadata prefix missing
         $repo = $this->getProvider();
         $repo->setRequest((new ServerRequest())->withQueryParams([
             'verb' => 'ListIdentifiers',
+        ]));
+        $response = $repo->getResponse();
+
+        $this->assertValidResponse($response);
+        $this->assertXPathExists($response, "/oai:OAI-PMH/oai:error[@code='badArgument']");
+        
+        //metadata prefix wrong
+        $repo = $this->getProvider();
+        $repo->setRequest((new ServerRequest())->withQueryParams([
+            'verb' => 'ListIdentifiers',
+            'metadataPrefix' => 'oai_custom',
+        ]));
+        $response = $repo->getResponse();
+
+        $this->assertValidResponse($response);
+        $this->assertXPathExists($response, "/oai:OAI-PMH/oai:error[@code='cannotDisseminateFormat']");
+        
+        $repo = $this->getProvider();
+        $repo->setRequest((new ServerRequest())->withQueryParams([
+            'verb' => 'ListIdentifiers',
+            'metadataPrefix' => 'oai_dc',
             'from' => '2345-44-56'
         ]));
         $response = $repo->getResponse();
@@ -372,6 +417,7 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
         $repo = $this->getProvider();
         $repo->setRequest((new ServerRequest())->withQueryParams([
             'verb' => 'ListIdentifiers',
+            'metadataPrefix' => 'oai_dc',
             'from' => '2345-31-12'
         ]));
         $response = $repo->getResponse();
@@ -383,6 +429,7 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
         $repo = $this->getProvider();
         $repo->setRequest((new ServerRequest())->withQueryParams([
             'verb' => 'ListIdentifiers',
+            'metadataPrefix' => 'oai_dc',
             'from' => '2345-01-01T12:12:00+00'
         ]));
         $response = $repo->getResponse();
@@ -394,6 +441,7 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
         $repo = $this->getProvider();
         $repo->setRequest((new ServerRequest())->withQueryParams([
             'verb' => 'ListIdentifiers',
+            'metadataPrefix' => 'oai_dc',
             'from' => '2345-01-01T12:12:00Z'
         ]));
         $response = $repo->getResponse();
@@ -415,14 +463,15 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
             // In list identifiers
             (new ServerRequest())->withQueryParams([
                 'verb' => 'ListIdentifiers',
+                'metadataPrefix' => 'oai_dc',
                 'set' => 'deleted:set',
             ]),
             
             // In get record
             (new ServerRequest())->withQueryParams([
                 'verb' => 'GetRecord',
-                'identifier' => 'deleted',
                 'metadataPrefix' => 'oai_dc',
+                'identifier' => 'deleted',
             ]),
         ];
         
@@ -478,6 +527,7 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
         $listFormats = function ($identifier = null) {
             switch ($identifier) {
                 case "a":
+                case "deleted":
                 case null:
                     return [
                         new MetadataFormatType(
