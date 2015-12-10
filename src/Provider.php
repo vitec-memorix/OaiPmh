@@ -28,6 +28,7 @@ use Picturae\OaiPmh\Exception\NoRecordsMatchException;
 use Picturae\OaiPmh\Exception\NoSetHierarchyException;
 use Picturae\OaiPmh\Exception\CannotDisseminateFormatException;
 use Picturae\OaiPmh\Interfaces\RecordList as RecordListInterface;
+use Picturae\OaiPmh\Interfaces\ResultList as ResultListInterface;
 use Picturae\OaiPmh\Interfaces\Repository;
 use Picturae\OaiPmh\Interfaces\Repository\Identity;
 use Picturae\OaiPmh\Interfaces\Record\Header;
@@ -536,13 +537,29 @@ class Provider
 
     /**
      * Adds a resumptionToken to a a listNode if the is a resumption token otherwise it does nothing
-     * @param RecordListInterface $recordList
+     * @param ResultListInterface $recordList
      * @param \DomElement $listNode
      */
-    private function addResumptionToken($recordList, $listNode)
+    private function addResumptionToken(ResultListInterface $resultList, $listNode)
     {
-        if ($recordList->getResumptionToken()) {
-            $resumptionTokenNode = $this->response->createElement('resumptionToken', $recordList->getResumptionToken());
+        // @TODO Add support for expirationDate
+        
+        if ($resultList->getResumptionToken()) {
+            $resumptionTokenNode = $this->response->createElement('resumptionToken', $resultList->getResumptionToken());
+        } elseif ($resultList->getCompleteListSize() !== null || $resultList->getCursor() !== null) {
+            // An empty resumption token with attributes completeListSize and/or cursor.
+            $resumptionTokenNode = $this->response->createElement('resumptionToken');
+        }
+        
+        if ($resultList->getCompleteListSize() !== null) {
+            $resumptionTokenNode->setAttribute('completeListSize', $resultList->getCompleteListSize());
+        }
+
+        if ($resultList->getCursor() !== null) {
+            $resumptionTokenNode->setAttribute('cursor', $resultList->getCursor());
+        }
+    
+        if ($resumptionTokenNode) {
             $listNode->appendChild($resumptionTokenNode);
         }
     }
