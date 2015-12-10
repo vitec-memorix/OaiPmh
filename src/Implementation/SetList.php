@@ -41,13 +41,27 @@ class SetList implements \Picturae\OaiPmh\Interfaces\SetList
     private $items;
 
     /**
+     * @var int
+     */
+    private $completeListSize;
+    
+    /**
+     * @var int
+     */
+    private $cursor;
+    
+    /**
      * @param Set[] $items
      * @param null|string $resumptionToken
+     * @param null|int $completeListSize
+     * @param null|int $cursor
      */
-    public function __construct($items, $resumptionToken = null)
+    public function __construct($items, $resumptionToken = null, $completeListSize = null, $cursor = null)
     {
         $this->items = $items;
         $this->resumptionToken = $resumptionToken;
+        $this->completeListSize = $completeListSize;
+        $this->cursor = $cursor;
     }
 
 
@@ -65,5 +79,21 @@ class SetList implements \Picturae\OaiPmh\Interfaces\SetList
     public function getItems()
     {
         return $this->items;
+    }
+    
+    /**
+     * @return int
+     */
+    public function getCompleteListSize()
+    {
+        return $this->completeListSize;
+    }
+    
+    /**
+     * @return int
+     */
+    public function getCursor()
+    {
+        return $this->cursor;
     }
 }

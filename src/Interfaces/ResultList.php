@@ -31,4 +31,14 @@ interface ResultList
      * @return string
      */
     public function getResumptionToken();
+    
+    /**
+     * @return int
+     */
+    public function getCompleteListSize();
+    
+    /**
+     * @return int
+     */
+    public function getCursor();
 }
