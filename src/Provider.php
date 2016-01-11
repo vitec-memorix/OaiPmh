@@ -544,6 +544,8 @@ class Provider
     {
         // @TODO Add support for expirationDate
         
+        $resumptionTokenNode = null;
+        
         if ($resultList->getResumptionToken()) {
             $resumptionTokenNode = $this->response->createElement('resumptionToken', $resultList->getResumptionToken());
         } elseif ($resultList->getCompleteListSize() !== null || $resultList->getCursor() !== null) {
@@ -559,7 +561,7 @@ class Provider
             $resumptionTokenNode->setAttribute('cursor', $resultList->getCursor());
         }
     
-        if ($resumptionTokenNode) {
+        if ($resumptionTokenNode !== null) {
             $listNode->appendChild($resumptionTokenNode);
         }
     }
