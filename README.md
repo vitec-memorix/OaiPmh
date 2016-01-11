@@ -36,6 +36,13 @@ use Picturae\OaiPmh\Interfaces\SetList as InterfaceSetList;
 
 class Repository implements InterfaceRepository
 {
+    /**
+     * @return string the base URL of the repository
+     */
+    public function getBaseUrl()
+    {
+        return 'http://my-data-provider/oai-pmh';
+    }
 
     /**
      * @return Identity

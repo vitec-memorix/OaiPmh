@@ -150,7 +150,7 @@ class Provider
     {
         $this->response = new ResponseDocument();
         $this->response->addElement("responseDate", $this->toUtcDateTime(new \DateTime()));
-        $requestNode = $this->response->createElement("request", $this->repository->identify()->getBaseUrl());
+        $requestNode = $this->response->createElement("request", $this->repository->getBaseUrl());
         $this->response->getDocument()->documentElement->appendChild($requestNode);
 
         try {
@@ -267,7 +267,7 @@ class Provider
 
         // create a node for each property of identify
         $identityNode->appendChild($this->response->createElement('repositoryName', $identity->getRepositoryName()));
-        $identityNode->appendChild($this->response->createElement('baseURL', $identity->getBaseUrl()));
+        $identityNode->appendChild($this->response->createElement('baseURL', $this->repository->getBaseUrl()));
         $identityNode->appendChild($this->response->createElement('protocolVersion', '2.0'));
         foreach ($identity->getAdminEmails() as $email) {
             $identityNode->appendChild($this->response->createElement('adminEmail', $email));

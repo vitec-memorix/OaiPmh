@@ -36,11 +36,6 @@ class Identity implements IdentityInterface
     private $repositoryName;
 
     /**
-     * @var string
-     */
-    private $baseUrl;
-
-    /**
      * @var \DateTime
      */
     private $earliestDatestamp;
@@ -72,7 +67,6 @@ class Identity implements IdentityInterface
 
     /**
      * @param string $repositoryName
-     * @param string $baseUrl
      * @param \DateTime $earliestDatestamp
      * @param string $deletedRecord
      * @param array $adminEmails
@@ -82,7 +76,6 @@ class Identity implements IdentityInterface
      */
     public function __construct(
         $repositoryName,
-        $baseUrl,
         \DateTime $earliestDatestamp,
         $deletedRecord,
         array $adminEmails,
@@ -91,7 +84,6 @@ class Identity implements IdentityInterface
         \DOMDocument $description = null
     ) {
         $this->repositoryName = $repositoryName;
-        $this->baseUrl = $baseUrl;
         $this->earliestDatestamp = $earliestDatestamp;
         $this->deletedRecord = $deletedRecord;
         $this->granularity = $granularity;
@@ -107,14 +99,6 @@ class Identity implements IdentityInterface
     public function getRepositoryName()
     {
         return $this->repositoryName;
-    }
-
-    /**
-     * @return string the base URL of the repository
-     */
-    public function getBaseUrl()
-    {
-        return $this->baseUrl;
     }
 
     /**

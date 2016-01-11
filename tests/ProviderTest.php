@@ -532,7 +532,6 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
             $this->returnValue(
                 new Identity(
                     'testRepo',
-                    'http://example.com',
                     new \DateTime(),
                     \Picturae\OaiPmh\Interfaces\Repository\Identity::DELETED_RECORD_PERSISTENT,
                     ["email@example.com"],
