@@ -51,11 +51,6 @@ interface Identity
     public function getRepositoryName();
 
     /**
-     * @return string the base URL of the repository
-     */
-    public function getBaseUrl();
-
-    /**
      * @return \DateTime
      * a datetime that is the guaranteed lower limit of all datestamps recording changes,modifications, or deletions
      * in the repository. A repository must not use datestamps lower than the one specified
