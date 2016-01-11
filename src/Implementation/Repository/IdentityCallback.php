@@ -36,11 +36,6 @@ class IdentityCallback implements IdentityInterface
     private $repositoryName;
 
     /**
-     * @var string
-     */
-    private $baseUrl;
-
-    /**
      * @var \DateTime
      */
     private $earliestDatestamp;
@@ -72,7 +67,6 @@ class IdentityCallback implements IdentityInterface
 
     /**
      * @param \Closure|string $repositoryName
-     * @param \Closure|string $baseUrl
      * @param \Closure|\DateTime $earliestDatestamp
      * @param \Closure|string $deletedRecord
      * @param \Closure|array $adminEmails
@@ -83,7 +77,6 @@ class IdentityCallback implements IdentityInterface
 
     public function __construct(
         $repositoryName,
-        $baseUrl,
         $earliestDatestamp,
         $deletedRecord,
         $adminEmails,
@@ -92,7 +85,6 @@ class IdentityCallback implements IdentityInterface
         $description = null
     ) {
         $this->repositoryName = $repositoryName;
-        $this->baseUrl = $baseUrl;
         $this->earliestDatestamp = $earliestDatestamp;
         $this->deletedRecord = $deletedRecord;
         $this->granularity = $granularity;
@@ -116,14 +108,6 @@ class IdentityCallback implements IdentityInterface
     public function getRepositoryName()
     {
         return $this->load($this->repositoryName);
-    }
-
-    /**
-     * @return string the base URL of the repository
-     */
-    public function getBaseUrl()
-    {
-        return $this->load($this->baseUrl);
     }
 
     /**

@@ -24,6 +24,10 @@ use Picturae\OaiPmh\Interfaces\Repository\Identity;
 
 interface Repository
 {
+    /**
+     * @return string the base URL of the repository
+     */
+    public function getBaseUrl();
 
     /**
      * @return Identity
