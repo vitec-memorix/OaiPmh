@@ -27,7 +27,6 @@ use Picturae\OaiPmh\Exception\NoMetadataFormatsException;
 use Picturae\OaiPmh\Exception\NoRecordsMatchException;
 use Picturae\OaiPmh\Exception\NoSetHierarchyException;
 use Picturae\OaiPmh\Exception\CannotDisseminateFormatException;
-use Picturae\OaiPmh\Interfaces\RecordList as RecordListInterface;
 use Picturae\OaiPmh\Interfaces\ResultList as ResultListInterface;
 use Picturae\OaiPmh\Interfaces\Repository;
 use Picturae\OaiPmh\Interfaces\Repository\Identity;
@@ -605,7 +604,7 @@ class Provider
             function () use (&$fromGranularity) {
                 if ($fromGranularity !== null &&
                     $fromGranularity === Identity::GRANULARITY_YYYY_MM_DDTHH_MM_SSZ &&
-                    $this->repository->identify()->getGranularity() === Identity::GRANULARITY_YYYY_MM_DD) {
+                    $this->repository->getGranularity() === Identity::GRANULARITY_YYYY_MM_DD) {
                     throw new BadArgumentException(
                         'The granularity of the `from` argument is not supported by this repository'
                     );
@@ -614,7 +613,7 @@ class Provider
             function () use ($untilGranularity) {
                 if ($untilGranularity !== null &&
                     $untilGranularity === Identity::GRANULARITY_YYYY_MM_DDTHH_MM_SSZ &&
-                    $this->repository->identify()->getGranularity() === Identity::GRANULARITY_YYYY_MM_DD) {
+                    $this->repository->getGranularity() === Identity::GRANULARITY_YYYY_MM_DD) {
                     throw new BadArgumentException(
                         'The granularity of the `until` argument is not supported by this repository'
                     );

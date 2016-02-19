@@ -28,6 +28,13 @@ interface Repository
      * @return string the base URL of the repository
      */
     public function getBaseUrl();
+    
+    /**
+     * @return string
+     * the finest harvesting granularity supported by the repository. The legitimate values are
+     * YYYY-MM-DD and YYYY-MM-DDThh:mm:ssZ with meanings as defined in ISO8601.
+     */
+    public function getGranularity();
 
     /**
      * @return Identity
