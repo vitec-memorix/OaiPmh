@@ -61,9 +61,9 @@ class IdentityCallback implements IdentityInterface
     private $compression;
 
     /**
-     * @var \DOMDocument
+     * @var \DOMDocument[]
      */
-    private $description;
+    private $descriptions;
 
     /**
      * @param \Closure|string $repositoryName
@@ -72,7 +72,7 @@ class IdentityCallback implements IdentityInterface
      * @param \Closure|array $adminEmails
      * @param \Closure|string $granularity
      * @param \Closure|string|null $compression
-     * @param \Closure|\DOMDocument|null $description
+     * @param \Closure|\DOMDocument[]|null $descriptions
      */
 
     public function __construct(
@@ -82,7 +82,7 @@ class IdentityCallback implements IdentityInterface
         $adminEmails,
         $granularity,
         $compression = null,
-        $description = null
+        $descriptions = null
     ) {
         $this->repositoryName = $repositoryName;
         $this->earliestDatestamp = $earliestDatestamp;
@@ -90,7 +90,7 @@ class IdentityCallback implements IdentityInterface
         $this->granularity = $granularity;
         $this->adminEmails = $adminEmails;
         $this->compression = $compression;
-        $this->description = $description;
+        $this->descriptions = $descriptions;
     }
     
     private function load(&$valueOrCallback)
@@ -164,14 +164,14 @@ class IdentityCallback implements IdentityInterface
     }
 
     /**
-     * @return \DOMDocument|null
+     * @return \DOMDocument[]|null
      * optional an extensible mechanism for communities to describe their repositories. For
-     * example, the description container could be used to include collection-level metadata in the response to the
+     * example, the descriptions container could be used to include collection-level metadata in the response to the
      * Identify request. Implementation Guidelines are available to give directions with this respect. Each description
      * container must be accompanied by the URL of an XML schema describing the structure of the description container.
      */
-    public function getDescription()
+    public function getDescriptions()
     {
-        return $this->load($this->description);
+        return $this->load($this->descriptions);
     }
 }

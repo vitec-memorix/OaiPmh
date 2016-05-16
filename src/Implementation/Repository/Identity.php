@@ -61,9 +61,9 @@ class Identity implements IdentityInterface
     private $compression;
 
     /**
-     * @var \DOMDocument
+     * @var \DOMDocument[]
      */
-    private $description;
+    private $descriptions;
 
     /**
      * @param string $repositoryName
@@ -72,7 +72,7 @@ class Identity implements IdentityInterface
      * @param array $adminEmails
      * @param string $granularity
      * @param string|null $compression
-     * @param \DOMDocument|null $description
+     * @param \DOMDocument[]|null $descriptions
      */
     public function __construct(
         $repositoryName,
@@ -81,7 +81,7 @@ class Identity implements IdentityInterface
         array $adminEmails,
         $granularity,
         $compression = null,
-        \DOMDocument $description = null
+        $descriptions = null
     ) {
         $this->repositoryName = $repositoryName;
         $this->earliestDatestamp = $earliestDatestamp;
@@ -89,7 +89,7 @@ class Identity implements IdentityInterface
         $this->granularity = $granularity;
         $this->adminEmails = $adminEmails;
         $this->compression = $compression;
-        $this->description = $description;
+        $this->descriptions = $descriptions;
     }
 
     /**
@@ -155,14 +155,14 @@ class Identity implements IdentityInterface
     }
 
     /**
-     * @return \DOMDocument|null
+     * @return \DOMDocument[]|null
      * optional an extensible mechanism for communities to describe their repositories. For
      * example, the description container could be used to include collection-level metadata in the response to the
      * Identify request. Implementation Guidelines are available to give directions with this respect. Each description
      * container must be accompanied by the URL of an XML schema describing the structure of the description container.
      */
-    public function getDescription()
+    public function getDescriptions()
     {
-        return $this->description;
+        return $this->descriptions;
     }
 }

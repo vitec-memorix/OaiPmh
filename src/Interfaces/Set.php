@@ -38,10 +38,10 @@ interface Set
     public function getName();
 
     /**
-     * @return \DOMDocument|null
+     * @return \DOMDocument[]|null
      * an optional and repeatable container that may hold community-specific XML-encoded data about
      * the set; the accompanying Implementation Guidelines document provides suggestions regarding the usage of this
      * container.
      */
-    public function getDescription();
+    public function getDescriptions();
 }

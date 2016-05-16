@@ -279,8 +279,10 @@ class Provider
         if ($identity->getCompression()) {
             $identityNode->appendChild($this->response->createElement('compression', $identity->getCompression()));
         }
-        if ($identity->getDescription()) {
-            $identityNode->appendChild($this->response->createElement('description', $identity->getDescription()));
+        if ($identity->getDescriptions()) {
+            foreach ($identity->getDescriptions() as $description) {
+                $identityNode->appendChild($this->response->createElement('description', $description));
+            }
         }
 
         return $identityNode;

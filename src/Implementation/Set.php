@@ -41,18 +41,18 @@ class Set implements SetInterface
     private $name;
 
     /**
-     * @var \DOMDocument|null
+     * @var \DOMDocument[]|null
      */
-    private $description;
+    private $descriptions;
 
     /**
      * @param string $spec
      * @param string $name
-     * @param \DOMDocument|null $description
+     * @param \DOMDocument[]|null $descriptions
      */
-    public function __construct($spec, $name, \DOMDocument $description = null)
+    public function __construct($spec, $name, $descriptions = null)
     {
-        $this->description = $description;
+        $this->descriptions = $descriptions;
         $this->name = $name;
         $this->spec = $spec;
     }
@@ -79,13 +79,13 @@ class Set implements SetInterface
     }
 
     /**
-     * @return \DOMDocument|null
+     * @return \DOMDocument[]|null
      * an optional and repeatable container that may hold community-specific XML-encoded data about
      * the set; the accompanying Implementation Guidelines document provides suggestions regarding the usage of this
      * container.
      */
-    public function getDescription()
+    public function getDescriptions()
     {
-        return $this->description;
+        return $this->descriptions;
     }
 }
