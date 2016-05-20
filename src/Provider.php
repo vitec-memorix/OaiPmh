@@ -619,7 +619,7 @@ class Provider
                     );
                 }
             },
-            function () use ($metadataPrefix) {
+            function () use (&$metadataPrefix) {
                 if (!isset($this->params['metadataPrefix'])) {
                     throw new BadArgumentException("Missing required argument metadataPrefix");
                 }

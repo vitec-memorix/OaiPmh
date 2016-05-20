@@ -38,7 +38,7 @@ class ResponseDocument
     /**
      * @var string[]
      */
-    private $headers = ['Content-Type: text/xml; charset=utf8'];
+    private $headers = ['Content-Type' => 'text/xml; charset=utf8'];
 
     /**
      * @var string
