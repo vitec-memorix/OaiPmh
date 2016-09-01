@@ -169,9 +169,9 @@ class Provider
             foreach ($errors as $error) {
                 $this->response->addError($error);
             }
-        } catch (Exception $error) {
+        } catch (\Exception $error) {
             //add this error to the response
-            $this->response->addError($error);
+            $this->response->addError(new Exception($error->getMessage()));
         }
 
         return $this->response->getResponse();
