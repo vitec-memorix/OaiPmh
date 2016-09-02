@@ -172,9 +172,9 @@ class Provider
         } catch (\Exception $error) {
             //add this error to the response
             if ($error instanceof Exception) {
-               $this->response->addError($error);
+                $this->response->addError($error);
             } else {
-              $this->response->addError(new Exception($error->getMessage()));
+                $this->response->addError(new Exception($error->getMessage()));
             }
         }
 
