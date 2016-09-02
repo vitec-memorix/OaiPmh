@@ -171,7 +171,11 @@ class Provider
             }
         } catch (\Exception $error) {
             //add this error to the response
-            $this->response->addError(new Exception($error->getMessage()));
+            if ($error instanceof Exception) {
+               $this->response->addError($error);
+            } else {
+              $this->response->addError(new Exception($error->getMessage()));
+            }
         }
 
         return $this->response->getResponse();
