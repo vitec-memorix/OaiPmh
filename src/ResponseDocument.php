@@ -105,6 +105,8 @@ class ResponseDocument
         $this->status = '400';
         if ($error->getErrorName()) {
             $errorNode->setAttribute("code", $error->getErrorName());
+        } else {
+            $errorNode->setAttribute("code", "badArgument");
         }
     }
 
