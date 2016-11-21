@@ -103,7 +103,7 @@ class Provider
     public function __construct(Repository $repository, ServerRequestInterface $request = null)
     {
         $this->repository = $repository;
-        
+
         if ($request) {
             $this->setRequest($request);
         }
@@ -238,10 +238,10 @@ class Provider
 
         $record = $this->repository->getRecord($this->params['metadataPrefix'], $this->params['identifier']);
         $recordNode = $this->response->createElement('record');
-        
+
         $header = $record->getHeader();
         $recordNode->appendChild($this->getRecordHeaderNode($header));
-        
+
         // Only add metadata and about if the record is not deleted.
         if (!$header->isDeleted()) {
             $recordNode->appendChild($this->response->createElement('metadata', $record->getMetadata()));
@@ -412,10 +412,10 @@ class Provider
         //create 'record' node for each record with a 'header', 'metadata' and possibly 'about' node
         foreach ($records->getItems() as $record) {
             $recordNode = $this->response->createElement('record');
-            
+
             $header = $record->getHeader();
             $recordNode->appendChild($this->getRecordHeaderNode($header));
-            
+
             // Only add metadata and about if the record is not deleted.
             if (!$header->isDeleted()) {
                 $recordNode->appendChild($this->response->createElement('metadata', $record->getMetadata()));
@@ -510,7 +510,7 @@ class Provider
     /**
      * Converts a date coming from a request param and converts it to a \DateTime
      * @param string $date
-     * @return \DateTime
+     * @return [\DateTime, string]
      * @throws BadArgumentException when the date is invalid or not supplied in the right format
      */
     private function parseRequestDate($date)
@@ -522,7 +522,8 @@ class Provider
             $parsedDate = date_create_from_format('Y-m-d\TH:i:s\Z', $date, $timezone);
             $granularity = Identity::GRANULARITY_YYYY_MM_DDTHH_MM_SSZ;
         } elseif (preg_match('#^\d{4}-\d{2}-\d{2}$#', $date)) {
-            $parsedDate = date_create_from_format('Y-m-d', $date, $timezone);
+            // Add ! to format to set time to 00:00:00
+            $parsedDate = date_create_from_format('!Y-m-d', $date, $timezone);
             $granularity = Identity::GRANULARITY_YYYY_MM_DD;
         } else {
             throw new BadArgumentException("Expected a data in one of the following formats: " .
@@ -540,22 +541,22 @@ class Provider
 
     /**
      * Adds a resumptionToken to a a listNode if the is a resumption token otherwise it does nothing
-     * @param ResultListInterface $recordList
+     * @param ResultListInterface $resultList
      * @param \DomElement $listNode
      */
     private function addResumptionToken(ResultListInterface $resultList, $listNode)
     {
         // @TODO Add support for expirationDate
-        
+
         $resumptionTokenNode = null;
-        
+
         if ($resultList->getResumptionToken()) {
             $resumptionTokenNode = $this->response->createElement('resumptionToken', $resultList->getResumptionToken());
         } elseif ($resultList->getCompleteListSize() !== null || $resultList->getCursor() !== null) {
             // An empty resumption token with attributes completeListSize and/or cursor.
             $resumptionTokenNode = $this->response->createElement('resumptionToken');
         }
-        
+
         if ($resultList->getCompleteListSize() !== null) {
             $resumptionTokenNode->setAttribute('completeListSize', $resultList->getCompleteListSize());
         }
@@ -563,14 +564,14 @@ class Provider
         if ($resultList->getCursor() !== null) {
             $resumptionTokenNode->setAttribute('cursor', $resultList->getCursor());
         }
-    
+
         if ($resumptionTokenNode !== null) {
             $listNode->appendChild($resumptionTokenNode);
         }
     }
 
     /**
-     * Parses request arguments used by both ListIdentifiers and ListRecrods
+     * Parses request arguments used by both ListIdentifiers and ListRecords
      * @return array
      */
     private function getRecordListParams()
@@ -581,6 +582,7 @@ class Provider
         $fromGranularity = null;
         $untilGranularity  = null;
         $set = isset($this->params['set']) ? $this->params['set'] : null;
+
 
         $checks = [
             function () use (&$from, &$fromGranularity) {
@@ -593,14 +595,14 @@ class Provider
                     list($until, $untilGranularity) = $this->parseRequestDate($this->params['until']);
                 }
             },
-            function () use ($from, $until) {
+            function () use (&$from, &$until) {
                 if ($from !== null and $until !== null && $from > $until) {
                     throw new BadArgumentException(
                         'The `from` argument must be less than or equal to the `until` argument'
                     );
                 }
             },
-            function () use ($from, $until, $fromGranularity, $untilGranularity) {
+            function () use (&$from, &$until, &$fromGranularity, &$untilGranularity) {
                 if ($from !== null and $until !== null && $fromGranularity !== $untilGranularity) {
                     throw new BadArgumentException('The `from` and `until` arguments have different granularity');
                 }
@@ -614,7 +616,7 @@ class Provider
                     );
                 }
             },
-            function () use ($untilGranularity) {
+            function () use (&$untilGranularity) {
                 if ($untilGranularity !== null &&
                     $untilGranularity === Identity::GRANULARITY_YYYY_MM_DDTHH_MM_SSZ &&
                     $this->repository->getGranularity() === Identity::GRANULARITY_YYYY_MM_DD) {
@@ -631,11 +633,11 @@ class Provider
                 $this->checkMetadataPrefix($metadataPrefix);
             }
         ];
-        
+
         $this->doChecks($checks);
         return array($metadataPrefix, $from, $until, $set);
     }
-    
+
     /**
      * Checks if the metadata prefix is in the available metadata formats list.
      * @param string $metadataPrefix
@@ -645,7 +647,7 @@ class Provider
     private function checkMetadataPrefix($metadataPrefix, $identifier = null)
     {
         $availableMetadataFormats = $this->repository->listMetadataFormats($identifier);
-        
+
         $found = false;
         if (!empty($availableMetadataFormats)) {
             foreach ($availableMetadataFormats as $metadataFormat) {
@@ -655,7 +657,7 @@ class Provider
                 }
             }
         }
-        
+
         if (!$found) {
             throw new CannotDisseminateFormatException(
                 'The metadata format identified by the value given for the metadataPrefix argument '
