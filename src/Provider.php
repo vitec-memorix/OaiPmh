@@ -63,12 +63,12 @@ class Provider
      * @var array containing all verbs and the arguments they except
      */
     private static $verbs = [
-        "Identify" => array(),
-        "ListMetadataFormats" => array('identifier'),
-        "ListSets" => array('resumptionToken'),
-        "GetRecord" => array('identifier', 'metadataPrefix'),
-        "ListIdentifiers" => array('from', 'until', 'metadataPrefix', 'set', 'resumptionToken'),
-        "ListRecords" => array('from', 'until', 'metadataPrefix', 'set', 'resumptionToken')
+        "Identify" => [],
+        "ListMetadataFormats" => ['identifier'],
+        "ListSets" => ['resumptionToken'],
+        "GetRecord" => ['identifier', 'metadataPrefix'],
+        "ListIdentifiers" => ['from', 'until', 'metadataPrefix', 'set', 'resumptionToken'],
+        "ListRecords" => ['from', 'until', 'metadataPrefix', 'set', 'resumptionToken']
     ];
 
     /**
@@ -184,6 +184,7 @@ class Provider
     /**
      * executes the right function for the current verb
      * @return \DOMElement
+     * @throws BadVerbException
      */
     private function doVerb()
     {
@@ -215,6 +216,7 @@ class Provider
     /**
      * handles GetRecord requests
      * @return \DOMElement
+     * @throws BadArgumentException
      */
     private function getRecord()
     {
@@ -293,6 +295,7 @@ class Provider
     /**
      * handles ListMetadataFormats requests
      * @return \DOMElement
+     * @throws NoMetadataFormatsException
      */
     private function listMetadataFormats()
     {
@@ -302,7 +305,7 @@ class Provider
         $formats = $this->repository->listMetadataFormats($identifier);
 
         if (!count($formats)) {
-            throw new NoMetadataFormatsException();
+            throw new NoMetadataFormatsException("There are no metadata formats available for the specified item.");
         }
 
         //create a node for each metadataFormat
@@ -318,6 +321,9 @@ class Provider
 
     /**
      * checks if the provided verb is correct and if the arguments supplied are allowed for this verb
+     * @throws BadArgumentException
+     * @throws BadVerbException
+     * @throws MultipleExceptions
      */
     private function checkVerb()
     {
@@ -356,6 +362,7 @@ class Provider
     /**
      * handles ListSets requests
      * @return \DOMElement
+     * @throws NoSetHierarchyException
      */
     private function listSets()
     {
@@ -367,7 +374,7 @@ class Provider
         } else {
             $sets = $this->repository->listSets();
             if (!count($sets->getItems())) {
-                throw new NoSetHierarchyException();
+                throw new NoSetHierarchyException("The repository does not support sets.");
             }
         }
 
@@ -390,6 +397,8 @@ class Provider
     /**
      * handles ListSets Records
      * @return \DOMElement
+     * @throws NoSetHierarchyException
+     * @throws NoRecordsMatchException
      */
     private function listRecords()
     {
@@ -403,9 +412,12 @@ class Provider
             if (!count($records->getItems())) {
                 //maybe this is because someone tries to fetch from a set and we don't support that
                 if ($set && !count($this->repository->listSets()->getItems())) {
-                    throw new NoSetHierarchyException();
+                    throw new NoSetHierarchyException("The repository does not support sets.");
                 }
-                throw new NoRecordsMatchException();
+                throw new NoRecordsMatchException(
+                    "The combination of the values of the from, until, set and metadataPrefix arguments "
+                    . "results in an empty list."
+                );
             }
         }
 
@@ -438,6 +450,8 @@ class Provider
     /**
      * handles ListIdentifiers requests
      * @return \DOMElement
+     * @throws NoSetHierarchyException
+     * @throws NoRecordsMatchException
      */
     private function listIdentifiers()
     {
@@ -451,9 +465,12 @@ class Provider
             if (!count($records->getItems())) {
                 //maybe this is because someone tries to fetch from a set and we don't support that
                 if ($set && !count($this->repository->listSets()->getItems())) {
-                    throw new NoSetHierarchyException();
+                    throw new NoSetHierarchyException("The repository does not support sets.");
                 }
-                throw new NoRecordsMatchException();
+                throw new NoRecordsMatchException(
+                    "The combination of the values of the from, until, set and metadataPrefix arguments "
+                    . "results in an empty list."
+                );
             }
         }
 
@@ -491,6 +508,7 @@ class Provider
     /**
      * does all the checks in the closures and merge any exceptions into one big exception
      * @param \Closure[] $checks
+     * @throws MultipleExceptions
      */
     private function doChecks($checks)
     {
@@ -573,6 +591,7 @@ class Provider
     /**
      * Parses request arguments used by both ListIdentifiers and ListRecords
      * @return array
+     * @throws BadArgumentException
      */
     private function getRecordListParams()
     {
@@ -630,12 +649,15 @@ class Provider
                     throw new BadArgumentException("Missing required argument metadataPrefix");
                 }
                 $metadataPrefix = $this->params['metadataPrefix'];
+                if (is_array($metadataPrefix)) {
+                    throw new BadArgumentException("Only one metadataPrefix allowed");
+                }
                 $this->checkMetadataPrefix($metadataPrefix);
             }
         ];
 
         $this->doChecks($checks);
-        return array($metadataPrefix, $from, $until, $set);
+        return [$metadataPrefix, $from, $until, $set];
     }
 
     /**

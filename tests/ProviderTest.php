@@ -608,7 +608,9 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
                 case "b":
                     return [];
                 case "c":
-                    throw new IdDoesNotExistException();
+                    throw new IdDoesNotExistException(
+                        "The value of the identifier argument is unknown or illegal in this repository."
+                    );
             }
         };
 
@@ -642,7 +644,9 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
                             ]
                         );
                     } else {
-                        throw new BadResumptionTokenException();
+                        throw new BadResumptionTokenException(
+                            "The value of the resumptionToken argument is invalid or expired."
+                        );
                     }
                 }
             )
@@ -741,7 +745,9 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
                 case "deleted":
                     return $deletedRecord;
                 default:
-                    throw new IdDoesNotExistException();
+                    throw new IdDoesNotExistException(
+                        "The value of the identifier argument is unknown or illegal in this repository."
+                    );
             }
         };
 
