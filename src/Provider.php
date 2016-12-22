@@ -173,11 +173,10 @@ class Provider
             // Shift the records from the records stack and add them to the DOM tree
             // Records proper are always stored in the 'metadata' node
             foreach ($this->response->getDocument()->getElementsByTagName('metadata') as $item) {
-               $record = array_shift($this->records);
-               $node = $this->response->getDocument()->importNode($record->documentElement, true);
-               $item->appendChild($node);
+                $record = array_shift($this->records);
+                $node = $this->response->getDocument()->importNode($record->documentElement, true);
+                $item->appendChild($node);
             }
-
         } catch (MultipleExceptions $errors) {
             //multiple errors happened add all of the to the response
             foreach ($errors as $error) {
