@@ -97,6 +97,11 @@ class Provider
     private $request;
 
     /**
+     * @var array
+     */
+    private $records = [];
+
+    /**
      * @param Repository $repository
      * @param ServerRequestInterface $request
      */
@@ -164,6 +169,14 @@ class Provider
             // the element is only added when everything went fine, otherwise we would add error node(s) in the catch
             // block below
             $this->response->getDocument()->documentElement->appendChild($verbOutput);
+
+            // Shift the records from the records stack and add them to the DOM tree
+            // Records proper are always stored in the 'metadata' node
+            foreach ($this->response->getDocument()->getElementsByTagName('metadata') as $item) {
+                $record = array_shift($this->records);
+                $node = $this->response->getDocument()->importNode($record->documentElement, true);
+                $item->appendChild($node);
+            }
         } catch (MultipleExceptions $errors) {
             //multiple errors happened add all of the to the response
             foreach ($errors as $error) {
@@ -246,7 +259,10 @@ class Provider
 
         // Only add metadata and about if the record is not deleted.
         if (!$header->isDeleted()) {
-            $recordNode->appendChild($this->response->createElement('metadata', $record->getMetadata()));
+            $recordNode->appendChild($this->response->createElement('metadata'));
+
+            // Push the record itself on the records stack
+            array_push($this->records, $record->getMetadata());
 
             //only add an 'about' node if it's not null
             $about = $record->getAbout();
@@ -430,7 +446,10 @@ class Provider
 
             // Only add metadata and about if the record is not deleted.
             if (!$header->isDeleted()) {
-                $recordNode->appendChild($this->response->createElement('metadata', $record->getMetadata()));
+                $recordNode->appendChild($this->response->createElement('metadata'));
+
+                // Push the record itself on the records stack
+                array_push($this->records, $record->getMetadata());
 
                 //only add an 'about' node if it's not null
                 $about = $record->getAbout();
