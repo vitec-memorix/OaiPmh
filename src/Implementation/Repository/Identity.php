@@ -72,7 +72,7 @@ class Identity implements IdentityInterface
      * @param array $adminEmails
      * @param string $granularity
      * @param string|null $compression
-     * @param \DOMDocument[]|null $descriptions
+     * @param \DOMDocument[]|\DOMDocument|null $descriptions
      */
     public function __construct(
         $repositoryName,
@@ -89,7 +89,13 @@ class Identity implements IdentityInterface
         $this->granularity = $granularity;
         $this->adminEmails = $adminEmails;
         $this->compression = $compression;
-        $this->descriptions = $descriptions;
+        
+        // For backwards compatibility for single description
+        if (!is_array($descriptions) && !empty($descriptions)) {
+            $this->descriptions = [$descriptions];
+        } else {
+            $this->descriptions = $descriptions;
+        }
     }
 
     /**

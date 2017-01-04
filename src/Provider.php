@@ -374,8 +374,11 @@ class Provider
             $setNode = $this->response->createElement('set');
             $setNode->appendChild($this->response->createElement('setSpec', $set->getSpec()));
             $setNode->appendChild($this->response->createElement('setName', $set->getName()));
-            if ($set->getDescription()) {
-                $setNode->appendChild($this->response->createElement('setDescription', $set->getDescription()));
+            
+            if ($set->getDescriptions()) {
+                foreach ($set->getDescriptions() as $setDescription) {
+                    $setNode->appendChild($this->response->createElement('setDescription', $setDescription));
+                }
             }
             $listNode->appendChild($setNode);
         }

@@ -48,13 +48,19 @@ class Set implements SetInterface
     /**
      * @param string $spec
      * @param string $name
-     * @param \DOMDocument[]|null $descriptions
+     * @param \DOMDocument[]|\DOMDocument|null $descriptions
      */
     public function __construct($spec, $name, $descriptions = null)
     {
-        $this->descriptions = $descriptions;
         $this->name = $name;
         $this->spec = $spec;
+        
+        // For backwards compatibility for single description
+        if (!is_array($descriptions) && !empty($descriptions)) {
+            $this->descriptions = [$descriptions];
+        } else {
+            $this->descriptions = $descriptions;
+        }
     }
 
 
