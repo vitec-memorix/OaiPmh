@@ -29,6 +29,7 @@ use Picturae\OaiPmh\Implementation\RecordList;
 use Picturae\OaiPmh\Implementation\Repository\Identity;
 use Picturae\OaiPmh\Implementation\Set;
 use Picturae\OaiPmh\Implementation\SetList;
+use Picturae\XmlValidator\SchemaValidate;
 use Psr\Http\Message\ResponseInterface;
 use Zend\Diactoros\ServerRequest;
 
@@ -129,12 +130,6 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
         $document = new \DOMDocument();
         $document->loadXML($response->getBody());
 
-        $schemaLocation = $document->documentElement->getAttributeNS(
-            'http://www.w3.org/2001/XMLSchema-instance',
-            'schemaLocation'
-        );
-        $xsd = explode(" ", $schemaLocation)[1];
-
         $this->assertRegExp(
             '#^[1-5]\d{2}$#',
             (string)$response->getStatusCode(),
@@ -149,10 +144,15 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
             );
         }
 
-        try {
-            $this->assertTrue($document->schemaValidate($xsd));
-        } catch (\Exception $e) {
-            $this->fail($e->getMessage() . " in:\n" . $response->getBody());
+        $isValid = SchemaValidate::validate($document, $errors);
+        
+        if ($isValid) {
+            $this->assertTrue($isValid);
+        } else {
+            foreach ($errors as $error) {
+                /* @var $error \LibXMLError */
+                $this->fail('on line ' . $error->line . ': ' . $error->message . " in:\n" . $response->getBody());
+            }
         }
     }
 
@@ -513,21 +513,31 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
     {
         $mock = $this->getMockBuilder('\Picturae\OaiPmh\Interfaces\Repository')->getMock();
 
-//        $description = new \DOMDocument();
-//        $description->loadXML('<eprints
-//                     xmlns="http://www.openarchives.org/OAI/1.1/eprints"
-//                     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-//                     xsi:schemaLocation="http://www.openarchives.org/OAI/1.1/eprints
-//                     http://www.openarchives.org/OAI/1.1/eprints.xsd">
-//                    <content>
-//                      <URL>http://memory.loc.gov/ammem/oamh/lcoa1_content.html</URL>
-//                      <text>Selected collections from American Memory at the Library
-//                            of Congress</text>
-//                    </content>
-//                    <metadataPolicy/>
-//                    <dataPolicy/>
-//                    </eprints>'
-//        );
+        $xmlDescription = '
+                <eprints xmlns="http://www.openarchives.org/OAI/1.1/eprints"
+                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                    xsi:schemaLocation="http://www.openarchives.org/OAI/1.1/eprints         
+                    http://www.openarchives.org/OAI/1.1/eprints.xsd">
+                    <content>
+                        <URL>http://arXiv.org/arXiv_content.htm</URL>
+                    </content>
+                    <metadataPolicy>
+                        <text>Metadata can be used by commercial and non-commercial 
+                              service providers</text>
+                        <URL>http://arXiv.org/arXiv_metadata_use.htm</URL>
+                    </metadataPolicy>
+                    <dataPolicy>
+                        <text>Full content, i.e. preprints may not be harvested by robots</text>
+                    </dataPolicy>
+                    <submissionPolicy>
+                        <URL>http://arXiv.org/arXiv_submission.htm</URL>
+                    </submissionPolicy>
+                </eprints>
+            ';
+        
+        $description = new \DOMDocument();
+        $description->loadXML($xmlDescription);
+        
         $mock->expects($this->any())->method('identify')->will(
             $this->returnValue(
                 new Identity(
@@ -536,7 +546,8 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
                     \Picturae\OaiPmh\Interfaces\Repository\Identity::DELETED_RECORD_PERSISTENT,
                     ["email@example.com"],
                     \Picturae\OaiPmh\Interfaces\Repository\Identity::GRANULARITY_YYYY_MM_DDTHH_MM_SSZ,
-                    'gzip'
+                    'gzip',
+                    [$description]
                 )
             )
         );
@@ -569,11 +580,13 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
             $this->returnCallback($listFormats)
         )->with();
 
-
+        $setDescription = new \DOMDocument();
+        $setDescription->loadXML($xmlDescription);
+        
         $setList = new SetList(
             [
-                new Set("a", "set A"),
-                new Set("b", "set B"),
+                new Set("a", "set A", [$setDescription, $setDescription]),
+                new Set("b", "set B", $setDescription),
             ],
             'resumptionToken'
         );

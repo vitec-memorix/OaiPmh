@@ -92,10 +92,18 @@ class Identity implements IdentityInterface
         
         // For backwards compatibility for single description
         if (!is_array($descriptions) && !empty($descriptions)) {
-            $this->descriptions = [$descriptions];
-        } else {
-            $this->descriptions = $descriptions;
+            $descriptions = [$descriptions];
         }
+        
+        if (!empty($descriptions)) {
+            foreach ($descriptions as $description) {
+                if (!$description instanceof \DOMDocument) {
+                    throw new \InvalidArgumentException('Description must be DOMDocument or array of DOMDocument');
+                }
+            }
+        }
+        
+        $this->descriptions = $descriptions;
     }
 
     /**
