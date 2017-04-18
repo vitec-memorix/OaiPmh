@@ -21,6 +21,7 @@
 namespace Picturae\OaiPmh;
 
 use GuzzleHttp\Psr7\Response;
+use Picturae\OaiPmh\Exception\NoRecordsMatchException;
 use Psr\Http\Message\ResponseInterface;
 
 /**
@@ -102,7 +103,11 @@ class ResponseDocument
     public function addError(Exception $error)
     {
         $errorNode = $this->addElement("error", $error->getMessage());
-        $this->status = '400';
+
+        if (!$error instanceof NoRecordsMatchException) {
+            $this->status = '400';
+        }
+
         if ($error->getErrorName()) {
             $errorNode->setAttribute("code", $error->getErrorName());
         } else {
