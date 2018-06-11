@@ -1,7 +1,7 @@
 {
   "name": "picturae/oai-pmh",
   "description": "Picturae OAI-PMH package. Can be used to create a OAI endpoint",
-  "license": "GPLv3",
+  "license": "GPL-3.0-or-later",
   "repositories": [
     {
       "type": "vcs",
