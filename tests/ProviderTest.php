@@ -271,7 +271,7 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
 
         $this->assertValidResponse($response);
         $this->assertXPathExists($response, "/oai:OAI-PMH/oai:error[@code='badArgument']");
-        
+
         //metadata prefix wrong
         $repo = $this->getProvider();
         $repo->setRequest((new ServerRequest())->withQueryParams([
@@ -359,7 +359,7 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
 
         $this->assertValidResponse($response);
         $this->assertXPathExists($response, "/oai:OAI-PMH/oai:error[@code='cannotDisseminateFormat']");
-        
+
         //valid request
         $repo = $this->getProvider();
         $repo->setRequest((new ServerRequest())->withQueryParams([
@@ -373,7 +373,7 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
         // Fix schema validation and enable this test again.
         // @see https://github.com/picturae/OaiPmh/issues/2
 //        $this->assertValidResponse($response);
-        
+
         $this->assertXPathNotExists($response, "/oai:OAI-PMH/oai:error[@code='badArgument']");
 
         //valid request
@@ -400,7 +400,7 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
 
         $this->assertValidResponse($response);
         $this->assertXPathExists($response, "/oai:OAI-PMH/oai:error[@code='badArgument']");
-        
+
         //metadata prefix wrong
         $repo = $this->getProvider();
         $repo->setRequest((new ServerRequest())->withQueryParams([
@@ -411,7 +411,7 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
 
         $this->assertValidResponse($response);
         $this->assertXPathExists($response, "/oai:OAI-PMH/oai:error[@code='cannotDisseminateFormat']");
-        
+
         $repo = $this->getProvider();
         $repo->setRequest((new ServerRequest())->withQueryParams([
             'verb' => 'ListIdentifiers',
@@ -422,6 +422,53 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
 
         $this->assertValidResponse($response);
         $this->assertXPathExists($response, "/oai:OAI-PMH/oai:error[@code='badArgument']");
+
+        // different form and until granularity in one request
+        $repo = $this->getProvider();
+        $repo->setRequest((new ServerRequest())->withQueryParams([
+            'verb' => 'ListIdentifiers',
+            'metadataPrefix' => 'oai_dc',
+            'from' => '2012-02-12',
+            'until' => '2012-04-12T12:00:00Z'
+        ]));
+        $response = $repo->getResponse();
+        $this->assertValidResponse($response);
+        $this->assertXPathExists($response, "/oai:OAI-PMH/oai:error[@code='badArgument']");
+
+        $repo = $this->getProvider();
+        $repo->setRequest((new ServerRequest())->withQueryParams([
+            'verb' => 'ListIdentifiers',
+            'metadataPrefix' => 'oai_dc',
+            'from' => '2012-02-12T12:00:00Z',
+            'until' => '2012-04-12'
+        ]));
+        $response = $repo->getResponse();
+        $this->assertValidResponse($response);
+        $this->assertXPathExists($response, "/oai:OAI-PMH/oai:error[@code='badArgument']");
+
+        // from after until
+        $repo = $this->getProvider();
+        $repo->setRequest((new ServerRequest())->withQueryParams([
+            'verb' => 'ListIdentifiers',
+            'metadataPrefix' => 'oai_dc',
+            'from' => '2012-06-12',
+            'until' => '2012-04-12'
+        ]));
+        $response = $repo->getResponse();
+        $this->assertValidResponse($response);
+        $this->assertXPathExists($response, "/oai:OAI-PMH/oai:error[@code='badArgument']");
+
+        // From before until
+        $repo = $this->getProvider();
+        $repo->setRequest((new ServerRequest())->withQueryParams([
+            'verb' => 'ListIdentifiers',
+            'metadataPrefix' => 'oai_dc',
+            'from' => '2012-02-12',
+            'until' => '2012-04-12'
+        ]));
+        $response = $repo->getResponse();
+        $this->assertValidResponse($response);
+        $this->assertXPathNotExists($response, "/oai:OAI-PMH/oai:error[@code='badArgument']");
 
         $repo = $this->getProvider();
         $repo->setRequest((new ServerRequest())->withQueryParams([
@@ -467,7 +514,7 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
             "/oai:OAI-PMH/oai:ListIdentifiers/oai:resumptionToken[@completeListSize=\"100\"]"
         );
     }
-    
+
     public function testDeletedRecords()
     {
         $requests = [
@@ -477,14 +524,14 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
                 'metadataPrefix' => 'oai_dc',
                 'set' => 'deleted:set',
             ]),
-            
+
             // In list identifiers
             (new ServerRequest())->withQueryParams([
                 'verb' => 'ListIdentifiers',
                 'metadataPrefix' => 'oai_dc',
                 'set' => 'deleted:set',
             ]),
-            
+
             // In get record
             (new ServerRequest())->withQueryParams([
                 'verb' => 'GetRecord',
@@ -492,12 +539,12 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
                 'identifier' => 'deleted',
             ]),
         ];
-        
+
         foreach ($requests as $request) {
             $repo = $this->getProvider();
             $repo->setRequest($request);
             $response = $repo->getResponse();
-            
+
             $this->assertValidResponse($response);
             $this->assertXPathNotExists($response, "/oai:OAI-PMH/oai:error");
             $this->assertXPathExists($response, "//oai:header[@status='deleted']");
@@ -561,7 +608,9 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
                 case "b":
                     return [];
                 case "c":
-                    throw new IdDoesNotExistException();
+                    throw new IdDoesNotExistException(
+                        "The value of the identifier argument is unknown or illegal in this repository."
+                    );
             }
         };
 
@@ -595,7 +644,9 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
                             ]
                         );
                     } else {
-                        throw new BadResumptionTokenException();
+                        throw new BadResumptionTokenException(
+                            "The value of the resumptionToken argument is invalid or expired."
+                        );
                     }
                 }
             )
@@ -629,7 +680,7 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
         );
 
         $someRecord = new Record(new Header("id1", new \DateTime()), $recordMetadata);
-        
+
         $deletedRecordMetadata = new \DOMDocument();
         $deletedRecordMetadata->loadXML(
             '
@@ -649,7 +700,7 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
             new Header("deleted", new \DateTime(), [], true),
             $deletedRecordMetadata
         );
-        
+
         $listRecords = function (
             $metadataFormat = null,
             $from = null,
@@ -694,7 +745,9 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
                 case "deleted":
                     return $deletedRecord;
                 default:
-                    throw new IdDoesNotExistException();
+                    throw new IdDoesNotExistException(
+                        "The value of the identifier argument is unknown or illegal in this repository."
+                    );
             }
         };
 

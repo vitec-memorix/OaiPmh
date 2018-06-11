@@ -63,12 +63,12 @@ class Provider
      * @var array containing all verbs and the arguments they except
      */
     private static $verbs = [
-        "Identify" => array(),
-        "ListMetadataFormats" => array('identifier'),
-        "ListSets" => array('resumptionToken'),
-        "GetRecord" => array('identifier', 'metadataPrefix'),
-        "ListIdentifiers" => array('from', 'until', 'metadataPrefix', 'set', 'resumptionToken'),
-        "ListRecords" => array('from', 'until', 'metadataPrefix', 'set', 'resumptionToken')
+        "Identify" => [],
+        "ListMetadataFormats" => ['identifier'],
+        "ListSets" => ['resumptionToken'],
+        "GetRecord" => ['identifier', 'metadataPrefix'],
+        "ListIdentifiers" => ['from', 'until', 'metadataPrefix', 'set', 'resumptionToken'],
+        "ListRecords" => ['from', 'until', 'metadataPrefix', 'set', 'resumptionToken']
     ];
 
     /**
@@ -97,13 +97,18 @@ class Provider
     private $request;
 
     /**
+     * @var array
+     */
+    private $records = [];
+
+    /**
      * @param Repository $repository
      * @param ServerRequestInterface $request
      */
     public function __construct(Repository $repository, ServerRequestInterface $request = null)
     {
         $this->repository = $repository;
-        
+
         if ($request) {
             $this->setRequest($request);
         }
@@ -164,6 +169,14 @@ class Provider
             // the element is only added when everything went fine, otherwise we would add error node(s) in the catch
             // block below
             $this->response->getDocument()->documentElement->appendChild($verbOutput);
+
+            // Shift the records from the records stack and add them to the DOM tree
+            // Records proper are always stored in the 'metadata' node
+            foreach ($this->response->getDocument()->getElementsByTagName('metadata') as $item) {
+                $record = array_shift($this->records);
+                $node = $this->response->getDocument()->importNode($record->documentElement, true);
+                $item->appendChild($node);
+            }
         } catch (MultipleExceptions $errors) {
             //multiple errors happened add all of the to the response
             foreach ($errors as $error) {
@@ -184,6 +197,7 @@ class Provider
     /**
      * executes the right function for the current verb
      * @return \DOMElement
+     * @throws BadVerbException
      */
     private function doVerb()
     {
@@ -215,6 +229,7 @@ class Provider
     /**
      * handles GetRecord requests
      * @return \DOMElement
+     * @throws BadArgumentException
      */
     private function getRecord()
     {
@@ -238,13 +253,16 @@ class Provider
 
         $record = $this->repository->getRecord($this->params['metadataPrefix'], $this->params['identifier']);
         $recordNode = $this->response->createElement('record');
-        
+
         $header = $record->getHeader();
         $recordNode->appendChild($this->getRecordHeaderNode($header));
-        
+
         // Only add metadata and about if the record is not deleted.
         if (!$header->isDeleted()) {
-            $recordNode->appendChild($this->response->createElement('metadata', $record->getMetadata()));
+            $recordNode->appendChild($this->response->createElement('metadata'));
+
+            // Push the record itself on the records stack
+            array_push($this->records, $record->getMetadata());
 
             //only add an 'about' node if it's not null
             $about = $record->getAbout();
@@ -293,6 +311,7 @@ class Provider
     /**
      * handles ListMetadataFormats requests
      * @return \DOMElement
+     * @throws NoMetadataFormatsException
      */
     private function listMetadataFormats()
     {
@@ -302,7 +321,7 @@ class Provider
         $formats = $this->repository->listMetadataFormats($identifier);
 
         if (!count($formats)) {
-            throw new NoMetadataFormatsException();
+            throw new NoMetadataFormatsException("There are no metadata formats available for the specified item.");
         }
 
         //create a node for each metadataFormat
@@ -318,6 +337,9 @@ class Provider
 
     /**
      * checks if the provided verb is correct and if the arguments supplied are allowed for this verb
+     * @throws BadArgumentException
+     * @throws BadVerbException
+     * @throws MultipleExceptions
      */
     private function checkVerb()
     {
@@ -356,6 +378,7 @@ class Provider
     /**
      * handles ListSets requests
      * @return \DOMElement
+     * @throws NoSetHierarchyException
      */
     private function listSets()
     {
@@ -367,7 +390,7 @@ class Provider
         } else {
             $sets = $this->repository->listSets();
             if (!count($sets->getItems())) {
-                throw new NoSetHierarchyException();
+                throw new NoSetHierarchyException("The repository does not support sets.");
             }
         }
 
@@ -390,6 +413,8 @@ class Provider
     /**
      * handles ListSets Records
      * @return \DOMElement
+     * @throws NoSetHierarchyException
+     * @throws NoRecordsMatchException
      */
     private function listRecords()
     {
@@ -403,22 +428,28 @@ class Provider
             if (!count($records->getItems())) {
                 //maybe this is because someone tries to fetch from a set and we don't support that
                 if ($set && !count($this->repository->listSets()->getItems())) {
-                    throw new NoSetHierarchyException();
+                    throw new NoSetHierarchyException("The repository does not support sets.");
                 }
-                throw new NoRecordsMatchException();
+                throw new NoRecordsMatchException(
+                    "The combination of the values of the from, until, set and metadataPrefix arguments "
+                    . "results in an empty list."
+                );
             }
         }
 
         //create 'record' node for each record with a 'header', 'metadata' and possibly 'about' node
         foreach ($records->getItems() as $record) {
             $recordNode = $this->response->createElement('record');
-            
+
             $header = $record->getHeader();
             $recordNode->appendChild($this->getRecordHeaderNode($header));
-            
+
             // Only add metadata and about if the record is not deleted.
             if (!$header->isDeleted()) {
-                $recordNode->appendChild($this->response->createElement('metadata', $record->getMetadata()));
+                $recordNode->appendChild($this->response->createElement('metadata'));
+
+                // Push the record itself on the records stack
+                array_push($this->records, $record->getMetadata());
 
                 //only add an 'about' node if it's not null
                 $about = $record->getAbout();
@@ -438,6 +469,8 @@ class Provider
     /**
      * handles ListIdentifiers requests
      * @return \DOMElement
+     * @throws NoSetHierarchyException
+     * @throws NoRecordsMatchException
      */
     private function listIdentifiers()
     {
@@ -451,9 +484,12 @@ class Provider
             if (!count($records->getItems())) {
                 //maybe this is because someone tries to fetch from a set and we don't support that
                 if ($set && !count($this->repository->listSets()->getItems())) {
-                    throw new NoSetHierarchyException();
+                    throw new NoSetHierarchyException("The repository does not support sets.");
                 }
-                throw new NoRecordsMatchException();
+                throw new NoRecordsMatchException(
+                    "The combination of the values of the from, until, set and metadataPrefix arguments "
+                    . "results in an empty list."
+                );
             }
         }
 
@@ -491,6 +527,7 @@ class Provider
     /**
      * does all the checks in the closures and merge any exceptions into one big exception
      * @param \Closure[] $checks
+     * @throws MultipleExceptions
      */
     private function doChecks($checks)
     {
@@ -510,7 +547,7 @@ class Provider
     /**
      * Converts a date coming from a request param and converts it to a \DateTime
      * @param string $date
-     * @return \DateTime
+     * @return [\DateTime, string]
      * @throws BadArgumentException when the date is invalid or not supplied in the right format
      */
     private function parseRequestDate($date)
@@ -522,7 +559,8 @@ class Provider
             $parsedDate = date_create_from_format('Y-m-d\TH:i:s\Z', $date, $timezone);
             $granularity = Identity::GRANULARITY_YYYY_MM_DDTHH_MM_SSZ;
         } elseif (preg_match('#^\d{4}-\d{2}-\d{2}$#', $date)) {
-            $parsedDate = date_create_from_format('Y-m-d', $date, $timezone);
+            // Add ! to format to set time to 00:00:00
+            $parsedDate = date_create_from_format('!Y-m-d', $date, $timezone);
             $granularity = Identity::GRANULARITY_YYYY_MM_DD;
         } else {
             throw new BadArgumentException("Expected a data in one of the following formats: " .
@@ -540,22 +578,22 @@ class Provider
 
     /**
      * Adds a resumptionToken to a a listNode if the is a resumption token otherwise it does nothing
-     * @param ResultListInterface $recordList
+     * @param ResultListInterface $resultList
      * @param \DomElement $listNode
      */
     private function addResumptionToken(ResultListInterface $resultList, $listNode)
     {
         // @TODO Add support for expirationDate
-        
+
         $resumptionTokenNode = null;
-        
+
         if ($resultList->getResumptionToken()) {
             $resumptionTokenNode = $this->response->createElement('resumptionToken', $resultList->getResumptionToken());
         } elseif ($resultList->getCompleteListSize() !== null || $resultList->getCursor() !== null) {
             // An empty resumption token with attributes completeListSize and/or cursor.
             $resumptionTokenNode = $this->response->createElement('resumptionToken');
         }
-        
+
         if ($resultList->getCompleteListSize() !== null) {
             $resumptionTokenNode->setAttribute('completeListSize', $resultList->getCompleteListSize());
         }
@@ -563,15 +601,16 @@ class Provider
         if ($resultList->getCursor() !== null) {
             $resumptionTokenNode->setAttribute('cursor', $resultList->getCursor());
         }
-    
+
         if ($resumptionTokenNode !== null) {
             $listNode->appendChild($resumptionTokenNode);
         }
     }
 
     /**
-     * Parses request arguments used by both ListIdentifiers and ListRecrods
+     * Parses request arguments used by both ListIdentifiers and ListRecords
      * @return array
+     * @throws BadArgumentException
      */
     private function getRecordListParams()
     {
@@ -581,6 +620,7 @@ class Provider
         $fromGranularity = null;
         $untilGranularity  = null;
         $set = isset($this->params['set']) ? $this->params['set'] : null;
+
 
         $checks = [
             function () use (&$from, &$fromGranularity) {
@@ -593,14 +633,14 @@ class Provider
                     list($until, $untilGranularity) = $this->parseRequestDate($this->params['until']);
                 }
             },
-            function () use ($from, $until) {
+            function () use (&$from, &$until) {
                 if ($from !== null and $until !== null && $from > $until) {
                     throw new BadArgumentException(
                         'The `from` argument must be less than or equal to the `until` argument'
                     );
                 }
             },
-            function () use ($from, $until, $fromGranularity, $untilGranularity) {
+            function () use (&$from, &$until, &$fromGranularity, &$untilGranularity) {
                 if ($from !== null and $until !== null && $fromGranularity !== $untilGranularity) {
                     throw new BadArgumentException('The `from` and `until` arguments have different granularity');
                 }
@@ -614,7 +654,7 @@ class Provider
                     );
                 }
             },
-            function () use ($untilGranularity) {
+            function () use (&$untilGranularity) {
                 if ($untilGranularity !== null &&
                     $untilGranularity === Identity::GRANULARITY_YYYY_MM_DDTHH_MM_SSZ &&
                     $this->repository->getGranularity() === Identity::GRANULARITY_YYYY_MM_DD) {
@@ -628,14 +668,17 @@ class Provider
                     throw new BadArgumentException("Missing required argument metadataPrefix");
                 }
                 $metadataPrefix = $this->params['metadataPrefix'];
+                if (is_array($metadataPrefix)) {
+                    throw new BadArgumentException("Only one metadataPrefix allowed");
+                }
                 $this->checkMetadataPrefix($metadataPrefix);
             }
         ];
-        
+
         $this->doChecks($checks);
-        return array($metadataPrefix, $from, $until, $set);
+        return [$metadataPrefix, $from, $until, $set];
     }
-    
+
     /**
      * Checks if the metadata prefix is in the available metadata formats list.
      * @param string $metadataPrefix
@@ -645,7 +688,7 @@ class Provider
     private function checkMetadataPrefix($metadataPrefix, $identifier = null)
     {
         $availableMetadataFormats = $this->repository->listMetadataFormats($identifier);
-        
+
         $found = false;
         if (!empty($availableMetadataFormats)) {
             foreach ($availableMetadataFormats as $metadataFormat) {
@@ -655,7 +698,7 @@ class Provider
                 }
             }
         }
-        
+
         if (!$found) {
             throw new CannotDisseminateFormatException(
                 'The metadata format identified by the value given for the metadataPrefix argument '

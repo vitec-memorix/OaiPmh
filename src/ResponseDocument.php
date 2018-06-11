@@ -21,6 +21,7 @@
 namespace Picturae\OaiPmh;
 
 use GuzzleHttp\Psr7\Response;
+use Picturae\OaiPmh\Exception\NoRecordsMatchException;
 use Psr\Http\Message\ResponseInterface;
 
 /**
@@ -102,7 +103,11 @@ class ResponseDocument
     public function addError(Exception $error)
     {
         $errorNode = $this->addElement("error", $error->getMessage());
-        $this->status = '400';
+
+        if (!$error instanceof NoRecordsMatchException) {
+            $this->status = '400';
+        }
+
         if ($error->getErrorName()) {
             $errorNode->setAttribute("code", $error->getErrorName());
         } else {
@@ -136,14 +141,7 @@ class ResponseDocument
     public function createElement($name, $value = null)
     {
         $nameSpace = 'http://www.openarchives.org/OAI/2.0/';
-
-        if ($value instanceof \DOMDocument) {
-            $element = $this->document->createElementNS($nameSpace, $name, null);
-            $node = $this->document->importNode($value->documentElement, true);
-            $element->appendChild($node);
-        } else {
-            $element = $this->document->createElementNS($nameSpace, $name, htmlspecialchars($value, ENT_XML1));
-        }
+        $element = $this->document->createElementNS($nameSpace, $name, htmlspecialchars($value, ENT_XML1));
         return $element;
     }
 
