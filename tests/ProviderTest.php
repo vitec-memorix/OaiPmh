@@ -20,6 +20,8 @@
 
 namespace Test\Picturae\OaiPmh;
 
+use Laminas\Diactoros\ServerRequest;
+use PHPUnit\Framework\TestCase;
 use Picturae\OaiPmh\Exception\BadResumptionTokenException;
 use Picturae\OaiPmh\Exception\IdDoesNotExistException;
 use Picturae\OaiPmh\Implementation\MetadataFormatType;
@@ -30,9 +32,8 @@ use Picturae\OaiPmh\Implementation\Repository\Identity;
 use Picturae\OaiPmh\Implementation\Set;
 use Picturae\OaiPmh\Implementation\SetList;
 use Psr\Http\Message\ResponseInterface;
-use Zend\Diactoros\ServerRequest;
 
-class ProviderTest extends \PHPUnit_Framework_TestCase
+class ProviderTest extends TestCase
 {
     private function getProvider()
     {
