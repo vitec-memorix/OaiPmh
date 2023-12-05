@@ -19,9 +19,11 @@
 
 namespace Test\Picturae\OaiPmh\Validator;
 
-class SetSpecValidatorTest extends \PHPUnit_Framework_TestCase
+use PHPUnit\Framework\TestCase;
+
+class SetSpecValidatorTest extends TestCase
 {
-    
+
     /**
      *
      * @dataProvider validSpecProvider
@@ -34,7 +36,7 @@ class SetSpecValidatorTest extends \PHPUnit_Framework_TestCase
         $return = $header->isValid($value);
         $this->assertEquals($expected, $return);
     }
-    
+
     public function validSpecProvider()
     {
         return [
