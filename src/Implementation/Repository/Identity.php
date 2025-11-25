@@ -72,7 +72,7 @@ class Identity implements IdentityInterface
      * @param array $adminEmails
      * @param string $granularity
      * @param string|null $compression
-     * @param \DOMDocument|null $description
+     * @param string|null $description
      */
     public function __construct(
         $repositoryName,
@@ -81,7 +81,7 @@ class Identity implements IdentityInterface
         array $adminEmails,
         $granularity,
         $compression = null,
-        \DOMDocument $description = null
+        $description = null
     ) {
         $this->repositoryName = $repositoryName;
         $this->earliestDatestamp = $earliestDatestamp;
